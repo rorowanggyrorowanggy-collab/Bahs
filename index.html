@@ -8,6 +8,41 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<!-- FIREBASE SDK START -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp, where, Timestamp, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAC61tBtehNF3NKvv4Rq4bcNnD5hp56_jo",
+    authDomain: "xion-project-cbfcd.firebaseapp.com",
+    projectId: "xion-project-cbfcd",
+    storageBucket: "xion-project-cbfcd.firebasestorage.app",
+    messagingSenderId: "219590827722",
+    appId: "1:219590827722:web:c7bbc201be683269ea5e33",
+    measurementId: "G-38HXN3RHHF"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.db = db;
+  window.collection = collection;
+  window.addDoc = addDoc;
+  window.query = query;
+  window.orderBy = orderBy;
+  window.limit = limit;
+  window.getDocs = getDocs;
+  window.serverTimestamp = serverTimestamp;
+  window.where = where;
+  window.Timestamp = Timestamp;
+  window.onSnapshot = onSnapshot;
+  window.doc = doc;
+  window.deleteDoc = deleteDoc;
+</script>
+<!-- FIREBASE SDK END -->
+
 <style>
 :root{
   --bg:#0d0819;--surface:#17102b;--card:#1e1533;
@@ -475,6 +510,32 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div class="sec-head"><h3><i class="fa-regular fa-clock"></i> JADWAL SHOLAT</h3><span>WAKTU LOKAL</span></div>
     <p id="today-date" style="font-size:10px;color:#888;margin-bottom:10px"></p>
     <div class="prayer-grid" id="prayer-grid"><div class="prayer-box"><span>SUBUH</span><strong>--:--</strong><small>MEMUAT</small></div><div class="prayer-box"><span>DZUHUR</span><strong>--:--</strong><small>MEMUAT</small></div><div class="prayer-box"><span>ASHAR</span><strong>--:--</strong><small>MEMUAT</small></div><div class="prayer-box"><span>MAGHRIB</span><strong>--:--</strong><small>MEMUAT</small></div></div>
+    
+    <!-- FITUR DONASI -->
+    <div class="sec-head"><h3><i class="fa-solid fa-heart" style="color:var(--hoshino-pink)"></i> DUKUNG XION PROJECT</h3><span>FIREBASE</span></div>
+    <div class="action-card" style="padding:15px;">
+      <p style="font-size:11px; color:#aaa; margin-bottom:10px;">Bantu server tetap hidup dan terus berkembang!</p>
+      <input type="text" id="donor-nama" class="field" placeholder="Nama atau Panggilan" style="margin-bottom:8px;">
+      <input type="number" id="donor-nominal" class="field" placeholder="Nominal (Contoh: 10000)" style="margin-bottom:8px;">
+      <textarea id="donor-pesan" class="field" placeholder="Pesan/Doa (Opsional)" rows="2" style="margin-bottom:10px; resize:none;"></textarea>
+      <button id="btn-donasi" class="btn-primary" onclick="kirimDonasi()" style="background:linear-gradient(90deg, var(--hoshino-pink), var(--hoshino-pink-deep)); color:white; font-weight:800;">
+        <i class="fa-solid fa-paper-plane"></i> KIRIM DONASI
+      </button>
+    </div>
+
+    <!-- PERINGKAT DONASI -->
+    <div class="sec-head"><h3><i class="fa-solid fa-trophy"></i> TOP DONATUR</h3><span>FIREBASE</span></div>
+    <div class="grid-2" style="grid-template-columns: 1fr;">
+      <div class="action-card" style="padding:12px;">
+        <h4 class="font-cyber" style="font-size:11px; color:var(--hoshino-yellow); margin-bottom:8px;"><i class="fa-solid fa-calendar-week"></i> MINGGU INI</h4>
+        <div id="leaderboard-weekly"><p style="text-align:center;color:#888;font-size:11px;">Memuat data...</p></div>
+      </div>
+      <div class="action-card" style="padding:12px; margin-top:10px;">
+        <h4 class="font-cyber" style="font-size:11px; color:var(--hoshino-yellow); margin-bottom:8px;"><i class="fa-solid fa-calendar-alt"></i> BULAN INI</h4>
+        <div id="leaderboard-monthly"><p style="text-align:center;color:#888;font-size:11px;">Memuat data...</p></div>
+      </div>
+    </div>
+
     <div class="sec-head"><h3><i class="fa-solid fa-headset"></i> CONNECT WITH DEVELOPER</h3></div>
     <div class="action-card" onclick="alert('Atur nomor WhatsApp developer di bagian CONFIG pada kode.')"><h4><i class="fa-brands fa-whatsapp"></i> Developer Support</h4><p>Hubungi developer XION Project</p></div>
     <div class="action-card" style="text-align:center"><span class="font-mono" style="font-size:10px">BY TEAM XION PROJECT × HOSHINO</span></div>
@@ -534,13 +595,13 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
   </div>
 
   <div id="tab-chat" class="view-section">
-    <div class="hero-banner"><span class="hero-tag font-mono">XION COMMUNITY NETWORK</span><h2 class="font-cyber">GLOBAL CHAT</h2><p>Ruang percakapan komunitas XION PROJECT.</p><span class="pill-badge">● LOCAL CHAT MODE</span></div>
+    <div class="hero-banner"><span class="hero-tag font-mono">XION COMMUNITY NETWORK</span><h2 class="font-cyber">GLOBAL CHAT</h2><p>Ruang percakapan komunitas XION PROJECT.</p><span class="pill-badge">● LIVE FIREBASE</span></div>
     <div class="chat-panel">
       <div class="chat-top"><div><h3 style="font-size:12px">XION COMMUNITY</h3><span style="font-size:9px;color:var(--muted)">Public discussion room</span></div><span class="chat-status">● ACTIVE</span></div>
       <div id="chat-messages" class="chat-messages"></div>
       <div class="chat-compose"><input id="chat-input" maxlength="500" placeholder="Tulis pesan..." autocomplete="off"><button onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button></div>
     </div>
-    <p class="chat-note">Mode lokal: pesan tersimpan di browser ini. Chat lintas perangkat memerlukan Firebase/layanan backend.</p>
+    <p class="chat-note">Chat ini terhubung secara real-time ke Firebase. Semua pengguna dari perangkat lain bisa melihat pesan Anda.</p>
   </div>
 
   <div id="tab-profile" class="view-section">
@@ -829,6 +890,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
         <span class="about-tag" style="border-color:#FFE5A0;color:#FFE5A0">LocalStorage</span>
         <span class="about-tag" style="border-color:#a99cc4;color:#a99cc4">Font Awesome</span>
         <span class="about-tag" style="border-color:#4285F4;color:#4285F4">Google API</span>
+        <span class="about-tag" style="border-color:#FFCA28;color:#FFCA28">Firebase</span>
       </div>
       <p class="about-text" style="margin-top:12px"><strong>Zero framework</strong> — 100% Vanilla JS tanpa build step. Ringan, cepat, mudah di-host di mana saja (GitHub Pages, Vercel, Netlify).</p>
     </div>
@@ -860,7 +922,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div class="about-block">
       <div class="about-header"><i class="fa-solid fa-road" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">ROADMAP</h3></div>
       <div class="about-timeline">
-        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player, Google Login, WA Story</div></div>
+        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player, Google Login, WA Story, Firebase Donasi & Chat</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--hoshino-pink)"></span><div><strong>V5.0 (Next)</strong> — Firebase real-time chat, payment gateway, PWA install</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--muted)"></span><div><strong>V6.0 (Future)</strong> — Multi-language, AI assistant, cloud sync</div></div>
       </div>
@@ -915,6 +977,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 'use strict';
 const CONFIG={username:'xion_dev',password:'123456',newsUrl:'https://news.google.com/rss?hl=id&gl=ID&ceid=ID:id',quranApi:'https://equran.id/api/v2',prayerCity:'Yogyakarta',prayerCountry:'Indonesia'};
 let currentUser=CONFIG.username,currentRole='OWNER',introStep=0,selectedModule='DELAY HARD',selectedNode='pribadi',senders=loadSavedSenders(),allSurahs=[],splashTimer=null,splashPhaseTimer=null,selectedBuyRole=null,asmaIndex=0;
+let chatUnsubscribe = null;
 const $=id=>document.getElementById(id);
 const XION_ROLES={OWNER:{label:'OWNER',className:'role-owner',verified:true},DEVELOPER:{label:'DEVELOPER',className:'role-developer',verified:true},ADMIN:{label:'ADMIN',className:'role-admin',verified:false},MODERATOR:{label:'MODERATOR',className:'role-moderator',verified:false},PREMIUM:{label:'PREMIUM',className:'role-premium',verified:false},MEMBER:{label:'MEMBER',className:'role-member',verified:false}};
 const XION_ACCOUNTS={xion_dev:{password:'123456',role:'OWNER'},xion_developer:{password:'dev123',role:'DEVELOPER'},xion_admin:{password:'admin123',role:'ADMIN'},xion_mod:{password:'mod123',role:'MODERATOR'},xion_premium:{password:'premium123',role:'PREMIUM'},xion_member:{password:'member123',role:'MEMBER'}};
@@ -981,7 +1044,6 @@ window.onload = function () {
 // ==================== STORIES LOGIC (WA STYLE) ====================
 let stories = JSON.parse(localStorage.getItem('xion_stories')) || [];
 
-// AUTO-CLEANUP: Hapus story yang umurnya lebih dari 24 jam dari memori browser
 const now = Date.now();
 const validStories = stories.filter(s => (now - s.timestamp) <= 86400000);
 if (validStories.length !== stories.length) {
@@ -991,9 +1053,8 @@ if (validStories.length !== stories.length) {
 
 let currentStoryIndex = 0;
 let storyTimer = null;
-let storyDuration = 5000; // 5 detik per story
+let storyDuration = 5000; 
 
-// Seed dummy stories if empty (Menggunakan DiceBear & MyAnimeList yang stabil 100%)
 if (stories.length === 0) {
   stories = [
     { id: '1', user: 'Hoshino', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Hoshino', image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=500&q=80', text: 'Yahho~ Hari ini cerah ya, Sensei!', timestamp: Date.now() - 3600000 },
@@ -1006,7 +1067,6 @@ function renderStories() {
   const bar = $('story-bar');
   bar.innerHTML = '';
   
-  // Add "My Story" button
   const myStoryDiv = document.createElement('div');
   myStoryDiv.className = 'story-item';
   myStoryDiv.onclick = () => openModal('modal-add-story');
@@ -1021,9 +1081,7 @@ function renderStories() {
   `;
   bar.appendChild(myStoryDiv);
   
-  // Render other stories
   stories.forEach((s, index) => {
-    // Cek expired (24 jam)
     if (Date.now() - s.timestamp > 86400000) return;
     
     const div = document.createElement('div');
@@ -1045,7 +1103,6 @@ function postStory() {
   const fileInput = $('story-file-input');
   const textInput = $('story-text-input').value.trim();
   
-  // Cek apakah ada teks atau gambar
   if ((!fileInput.files || fileInput.files.length === 0) && !textInput) {
     alert('Pilih gambar atau tulis teks terlebih dahulu!');
     return;
@@ -1066,21 +1123,18 @@ function postStory() {
       localStorage.setItem('xion_stories', JSON.stringify(stories));
     } catch (err) {
       alert('Penyimpanan penuh! Hapus story lama atau gunakan gambar yang lebih kecil.');
-      stories.shift(); // Batalkan jika gagal
+      stories.shift(); 
       return;
     }
     
-    // Reset Form & Tutup Modal
     fileInput.value = '';
     $('story-text-input').value = '';
     closeModal('modal-add-story');
     
-    // Refresh Bar & Notifikasi
     renderStories();
     alert('Story berhasil diposting!');
   };
 
-  // Proses File jika dipilih
   if (fileInput.files && fileInput.files[0]) {
     const file = fileInput.files[0];
     if (file.size > 1.5 * 1024 * 1024) {
@@ -1091,7 +1145,6 @@ function postStory() {
     reader.onload = function(e) { saveStory(e.target.result); };
     reader.readAsDataURL(file);
   } else {
-    // Simpan Teks Saja (Tanpa Gambar)
     saveStory(null);
   }
 }
@@ -1130,7 +1183,6 @@ function openStoryViewer(index) {
     $('story-viewer-caption').style.display = 'none';
   }
   
-  // Setup progress bar
   const container = $('story-progress-container');
   container.innerHTML = '';
   stories.forEach((_, i) => {
@@ -1158,7 +1210,6 @@ function startStoryTimer() {
 
   const currentFill = fills[currentStoryIndex];
   if (currentFill) {
-    // Force reflow untuk memastikan animasi berjalan dari 0%
     void currentFill.offsetWidth; 
     currentFill.style.transition = `width ${storyDuration}ms linear`;
     currentFill.style.width = '100%';
@@ -1249,15 +1300,21 @@ function goToIntro(){clearInterval(splashTimer);clearInterval(splashPhaseTimer);
 function renderIntro(){const d=introData[introStep],bg=document.querySelector('.lambo-bg-video'),card=$('intro-card-video');if(bg&&bg.src!==d.video){bg.src=d.video;bg.load()}if(card&&card.src!==d.video){card.src=d.video;card.load()}playVideo(bg);playVideo(card);$('lambo-model-badge').textContent=d.model;$('intro-step-label').textContent='0'+(introStep+1)+' / 03';$('intro-icon-el').className='fa-solid '+d.icon;$('intro-tag').textContent=d.tag;$('intro-title').innerHTML=d.title;$('intro-desc').textContent=d.desc;$('intro-b1').textContent=d.b1;$('intro-b2').textContent=d.b2;[0,1,2].forEach(i=>$('dot-'+i).classList.toggle('active',i===introStep));$('intro-next-btn').innerHTML=d.btn+' <i class="fa-solid fa-arrow-right"></i>'}
 function nextIntro(){if(introStep<2){introStep++;renderIntro()}else{document.querySelectorAll('video').forEach(v=>v.pause());showScreen('screen-app');initDashboard()}}
 
-function initDashboard(){const n=new Date();$('today-date').textContent=n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();renderStories();renderSenders();loadSurahs();loadNews();loadPrayerTimes();updateXionProfile();renderChatMessages();renderRoleStore();renderRoleHistory();renderAsmaList();showAsma();updateClocks()}
-function switchTab(tab){const s=$('tab-'+tab);if(!s)return;document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));s.classList.add('active');document.querySelectorAll('.nav-btn').forEach(v=>v.classList.remove('active'));const nb=$('nav-'+tab);if(nb)nb.classList.add('active');if(tab==='chat')renderChatMessages()}
+function initDashboard(){const n=new Date();$('today-date').textContent=n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();renderStories();renderSenders();loadSurahs();loadNews();loadPrayerTimes();updateXionProfile();renderRoleStore();renderRoleHistory();renderAsmaList();showAsma();updateClocks();loadLeaderboardDonasi();}
+function switchTab(tab){const s=$('tab-'+tab);if(!s)return;document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));s.classList.add('active');document.querySelectorAll('.nav-btn').forEach(v=>v.classList.remove('active'));const nb=$('nav-'+tab);if(nb)nb.classList.add('active');if(tab==='chat')renderChatMessages();}
 function toggleDrawer(open){$('sidebar-drawer').classList.toggle('open',open);$('drawer-overlay').classList.toggle('active',open)}
 function drawerGo(tab){switchTab(tab);toggleDrawer(false)}
 function openSubpage(id){$(id).classList.add('active');if(id==='sub-quran')loadSurahs();if(id==='sub-roles'){renderRoleStore();renderRoleHistory()}if(id==='sub-asma'){renderAsmaList();showAsma()}if(id==='sub-gempa'){loadGempa()}}
 function closeSubpage(id){$(id).classList.remove('active')}
 function openModal(id){$(id).classList.add('active')}
 function closeModal(id){$(id).classList.remove('active')}
-function logoutApp(){clearInterval(splashTimer);clearInterval(splashPhaseTimer);document.querySelectorAll('.subpage,.modal-overlay').forEach(e=>e.classList.remove('active'));toggleDrawer(false);document.querySelectorAll('video').forEach(v=>v.pause());showScreen('screen-login');$('login-pass').value='';$('bot-msg').textContent='Kamu sudah keluar. Masukkan akses untuk login kembali.'}
+function logoutApp(){
+  clearInterval(splashTimer);clearInterval(splashPhaseTimer);
+  document.querySelectorAll('.subpage,.modal-overlay').forEach(e=>e.classList.remove('active'));
+  toggleDrawer(false);document.querySelectorAll('video').forEach(v=>v.pause());
+  showScreen('screen-login');$('login-pass').value='';$('bot-msg').textContent='Kamu sudah keluar. Masukkan akses untuk login kembali.';
+  if(chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+}
 
 async function loadNews(){const c=$('news-container');c.innerHTML='<div class="news-card"><h4>Memuat berita terbaru...</h4><p>Terhubung ke layanan berita</p></div>';try{const r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(CONFIG.newsUrl));if(!r.ok)throw Error();const j=await r.json();if(j.status!=='ok'||!j.items||!j.items.length)throw Error();c.innerHTML='';j.items.slice(0,10).forEach(it=>{const card=document.createElement('div');card.className='news-card';const l=document.createElement('span');l.className='pill-badge';l.textContent='LATEST NEWS';const h=document.createElement('h4');h.textContent=it.title||'Berita terbaru';const p=document.createElement('p');p.textContent=it.pubDate?new Date(it.pubDate).toLocaleDateString('id-ID'):'Berita online';const a=document.createElement('a');a.textContent='BACA SELENGKAPNYA ↗';a.href=it.link||'#';a.target='_blank';a.rel='noopener noreferrer';card.append(l,h,p,a);c.appendChild(card)})}catch(e){c.innerHTML='<div class="news-card"><h4>Berita belum dapat dimuat</h4><p>Periksa internet atau coba refresh.</p><button class="btn-secondary" onclick="loadNews()">COBA LAGI</button></div>'}}
 async function loadPrayerTimes(){try{const d=new Date(),url='https://api.aladhan.com/v1/timingsByCity/'+d.getDate()+'-'+(d.getMonth()+1)+'-'+d.getFullYear()+'?city='+encodeURIComponent(CONFIG.prayerCity)+'&country='+encodeURIComponent(CONFIG.prayerCountry)+'&method=20';const r=await fetch(url);if(!r.ok)throw Error();const j=await r.json(),t=j.data.timings;const keys=['Fajr','Dhuhr','Asr','Maghrib'];const labels=['SUBUH','DZUHUR','ASHAR','MAGHRIB'];$('prayer-grid').innerHTML=keys.map((k,i)=>'<div class="prayer-box"><span>'+labels[i]+'</span><strong>'+String(t[k]).slice(0,5)+'</strong><small>WAKTU SHOLAT</small></div>').join('')}catch(e){$('prayer-grid').innerHTML='<div class="prayer-box"><span>JADWAL</span><strong>--:--</strong><small>GAGAL DIMUAT</small></div>'}}
@@ -1280,12 +1337,87 @@ function showAnimeDetail(t,m,s){alert('ANIME: '+t+'\n'+m+'\n\n'+s+'\n\nKatalog i
 function runTool(n,o){alert('XION TOOL: '+n+'\n\n'+o)}
 function openUtility(){const ch=prompt('UTILITIES\n1. Base64 Encode\n2. Base64 Decode\n3. JSON Formatter\n\nMasukkan nomor:');if(!ch)return;if(['1','2','3'].indexOf(ch)===-1){alert('Pilihan tidak tersedia.');return}const v=prompt('Masukkan teks atau JSON:');if(v===null)return;try{if(ch==='1')alert(btoa(unescape(encodeURIComponent(v))));if(ch==='2')alert(decodeURIComponent(escape(atob(v))));if(ch==='3')alert(JSON.stringify(JSON.parse(v),null,2))}catch(e){alert('Input tidak valid: '+e.message)}}
 
-function loadChatMessages(){try{const d=JSON.parse(localStorage.getItem('xion_global_chat')||'[]');return Array.isArray(d)?d:[]}catch(e){return[]}}
-function saveChatMessages(m){try{localStorage.setItem('xion_global_chat',JSON.stringify(m))}catch(e){alert('Tidak dapat menyimpan pesan.')}}
-function renderChatMessages(){const c=$('chat-messages');if(!c)return;const msgs=loadChatMessages();c.innerHTML='';if(!msgs.length){const p=document.createElement('p');p.style.cssText='font-size:10px;color:#888;text-align:center';p.textContent='Belum ada pesan. Mulai percakapan!';c.appendChild(p);return}msgs.forEach((m,i)=>{const card=document.createElement('div');card.className='chat-message'+(m.username===currentUser?' mine':'');const head=document.createElement('div');head.className='chat-message-head';const u=document.createElement('strong');u.textContent=m.username;head.append(u,createRoleBadge(m.role));const tm=document.createElement('small');tm.textContent=m.time;const p=document.createElement('p');p.textContent=m.text;card.append(head,tm,p);if(m.username===currentUser||['OWNER','DEVELOPER','ADMIN','MODERATOR'].indexOf(currentRole)!==-1){const b=document.createElement('button');b.className='chat-delete';b.textContent='HAPUS PESAN';b.onclick=()=>{if(!confirm('Hapus pesan?'))return;const a=loadChatMessages();a.splice(i,1);saveChatMessages(a);renderChatMessages()};card.appendChild(b)}c.appendChild(card)});c.scrollTop=c.scrollHeight}
-function sendChatMessage(){const i=$('chat-input'),t=i.value.trim();if(!t)return;if(t.length>500){alert('Maksimal 500 karakter.');return}const a=loadChatMessages();a.push({username:currentUser,role:currentRole,text:t,time:new Date().toLocaleString('id-ID')});saveChatMessages(a);i.value='';renderChatMessages()}
+// ==================== FIREBASE CHAT (REAL-TIME) ====================
+function renderChatMessages(){
+  const c = $('chat-messages');
+  if (!c) return;
+  
+  if (chatUnsubscribe) chatUnsubscribe();
+
+  const q = window.query(window.collection(window.db, 'chats'), window.orderBy('createdAt', 'asc'), window.limit(50));
+  
+  chatUnsubscribe = window.onSnapshot(q, (snapshot) => {
+    c.innerHTML = '';
+    if (snapshot.empty) {
+      const p = document.createElement('p');
+      p.style.cssText = 'font-size:10px;color:#888;text-align:center';
+      p.textContent = 'Belum ada pesan. Mulai percakapan!';
+      c.appendChild(p);
+      return;
+    }
+    
+    snapshot.forEach((docSnap) => {
+      const m = docSnap.data();
+      const docId = docSnap.id;
+      const card = document.createElement('div');
+      card.className = 'chat-message' + (m.username === currentUser ? ' mine' : '');
+      const head = document.createElement('div');
+      head.className = 'chat-message-head';
+      const u = document.createElement('strong');
+      u.textContent = m.username;
+      head.append(u, createRoleBadge(m.role));
+      
+      const tm = document.createElement('small');
+      tm.textContent = m.time || new Date().toLocaleString('id-ID');
+      const p = document.createElement('p');
+      p.textContent = m.text;
+      card.append(head, tm, p);
+      
+      if (m.username === currentUser || ['OWNER','DEVELOPER','ADMIN','MODERATOR'].indexOf(currentRole) !== -1) {
+        const b = document.createElement('button');
+        b.className = 'chat-delete';
+        b.textContent = 'HAPUS PESAN';
+        b.onclick = async () => {
+          if (!confirm('Hapus pesan?')) return;
+          try {
+            await window.deleteDoc(window.doc(window.db, 'chats', docId));
+          } catch(e) {
+            alert('Gagal menghapus pesan: ' + e.message);
+          }
+        };
+        card.appendChild(b);
+      }
+      c.appendChild(card);
+    });
+    c.scrollTop = c.scrollHeight;
+  }, (error) => {
+     c.innerHTML = `<p style="color:#ef7777;font-size:10px;text-align:center;">Gagal memuat chat (Cek Rules Firebase).</p>`;
+  });
+}
+
+async function sendChatMessage(){
+  const i = $('chat-input'), t = i.value.trim();
+  if (!t) return;
+  if (t.length > 500) { alert('Maksimal 500 karakter.'); return; }
+  
+  try {
+    i.disabled = true;
+    await window.addDoc(window.collection(window.db, 'chats'), {
+      username: currentUser,
+      role: currentRole,
+      text: t,
+      time: new Date().toLocaleString('id-ID'),
+      createdAt: window.serverTimestamp()
+    });
+    i.value = '';
+  } catch(e) {
+    alert('Gagal mengirim pesan: ' + e.message);
+  } finally {
+    i.disabled = false;
+  }
+}
 $('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendChatMessage()}});
-window.addEventListener('storage',e=>{if(e.key==='xion_global_chat'&&$('tab-chat')&&$('tab-chat').classList.contains('active'))renderChatMessages()});
+// ===============================================================
 
 function showAsma(){const a=ASMA[asmaIndex];$('asma-count').textContent='NAMA '+String(asmaIndex+1).padStart(2,'0')+' / 99';$('asma-arab').textContent=a[0];$('asma-latin').textContent=a[1];$('asma-meaning').textContent=a[2];$('asma-total').textContent=ASMA.length+' NAMA'}
 function asmaPrev(){asmaIndex=(asmaIndex+ASMA.length-1)%ASMA.length;showAsma()}
@@ -1647,7 +1779,6 @@ async function handleSpotifyCallback() {
   const code = urlParams.get('code');
   
   if (code) {
-    // Bersihkan URL
     window.history.replaceState({}, document.title, window.location.pathname);
     
     try {
@@ -1695,7 +1826,6 @@ async function fetchSpotifyUser() {
     });
     
     if(res.status === 401) { 
-      // Token expired/invalid
       logoutSpotify(); 
       return; 
     }
@@ -1749,7 +1879,6 @@ async function searchSpotify() {
   }
 }
 
-// Spotify Web Playback SDK
 window.onSpotifyWebPlaybackSDKReady = () => {
   if(accessToken) initSpotifyPlayer();
 };
@@ -1821,7 +1950,119 @@ window.addEventListener('load', async () => {
   checkSpotifyState();
 });
 
-renderSenders();updateXionProfile();renderChatMessages();renderAsmaList();showAsma();updateClocks();
+// ==================== FITUR DONASI & LEADERBOARD ====================
+async function kirimDonasi() {
+  const nama = document.getElementById('donor-nama').value.trim();
+  const nominal = parseFloat(document.getElementById('donor-nominal').value);
+  const pesan = document.getElementById('donor-pesan').value.trim();
+
+  if (!nama || isNaN(nominal) || nominal <= 0) {
+    alert('Isi nama dan nominal donasi yang valid ya Sensei!');
+    return;
+  }
+
+  try {
+    document.getElementById('btn-donasi').textContent = 'Mengirim...';
+    document.getElementById('btn-donasi').disabled = true;
+
+    await window.addDoc(window.collection(window.db, 'donations'), {
+      name: nama,
+      amount: nominal,
+      message: pesan,
+      createdAt: window.serverTimestamp()
+    });
+
+    alert('Terima kasih atas donasinya, Sensei!');
+    document.getElementById('donor-nama').value = '';
+    document.getElementById('donor-nominal').value = '';
+    document.getElementById('donor-pesan').value = '';
+    
+    loadLeaderboardDonasi();
+  } catch (error) {
+    console.error("Error Donasi:", error);
+    alert("Gagal mengirim donasi: " + error.message);
+  } finally {
+    document.getElementById('btn-donasi').textContent = 'KIRIM DONASI';
+    document.getElementById('btn-donasi').disabled = false;
+  }
+}
+
+async function loadLeaderboardDonasi() {
+  const weeklyContainer = document.getElementById('leaderboard-weekly');
+  const monthlyContainer = document.getElementById('leaderboard-monthly');
+  if (!weeklyContainer || !monthlyContainer) return;
+
+  weeklyContainer.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;">Memuat data...</p>';
+  monthlyContainer.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;">Memuat data...</p>';
+
+  try {
+    const sekarang = new Date();
+    
+    const semingguLalu = new Date();
+    semingguLalu.setDate(sekarang.getDate() - 7);
+
+    const awalBulan = new Date(sekarang.getFullYear(), sekarang.getMonth(), 1);
+
+    const qWeekly = window.query(
+      window.collection(window.db, 'donations'),
+      window.where('createdAt', '>=', window.Timestamp.fromDate(semingguLalu)),
+      window.orderBy('createdAt', 'desc'),
+      window.orderBy('amount', 'desc'),
+      window.limit(5)
+    );
+
+    const qMonthly = window.query(
+      window.collection(window.db, 'donations'),
+      window.where('createdAt', '>=', window.Timestamp.fromDate(awalBulan)),
+      window.orderBy('createdAt', 'desc'),
+      window.orderBy('amount', 'desc'),
+      window.limit(5)
+    );
+
+    const snapWeekly = await window.getDocs(qWeekly);
+    const snapMonthly = await window.getDocs(qMonthly);
+
+    renderLeaderboard(snapWeekly, weeklyContainer, 'mingguan');
+    renderLeaderboard(snapMonthly, monthlyContainer, 'bulanan');
+
+  } catch (e) {
+    console.error("Gagal load leaderboard:", e);
+    weeklyContainer.innerHTML = '<p style="color:#ef7777;font-size:10px;text-align:center;">Gagal memuat peringkat.</p>';
+    monthlyContainer.innerHTML = '<p style="color:#ef7777;font-size:10px;text-align:center;">Gagal memuat peringkat.</p>';
+  }
+}
+
+function renderLeaderboard(snapshot, container, periode) {
+  if (snapshot.empty) {
+    container.innerHTML = `<p style="text-align:center;color:#888;font-size:10px;">Belum ada donasi ${periode} ini.</p>`;
+    return;
+  }
+
+  let html = '';
+  let rank = 1;
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    const nominal = data.amount ? data.amount.toLocaleString('id-ID') : '0';
+    const badgeColor = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : 'var(--muted)';
+    
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px; margin-bottom:6px; border-left: 3px solid ${badgeColor};">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <strong style="color:${badgeColor}; font-size:12px;">#${rank}</strong>
+          <div>
+            <div style="font-size:12px; color:#fff;">${data.name}</div>
+            ${data.message ? `<div style="font-size:9px; color:var(--muted); font-style:italic;">"${data.message}"</div>` : ''}
+          </div>
+        </div>
+        <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--hoshino-pink);">Rp ${nominal}</span>
+      </div>
+    `;
+    rank++;
+  });
+  container.innerHTML = html;
+}
+
+renderSenders();updateXionProfile();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-          </html>
+  </html>
