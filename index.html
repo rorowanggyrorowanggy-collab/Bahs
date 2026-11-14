@@ -960,22 +960,23 @@ function renderRoleHistory(){const c=$('role-history');if(!c)return;const a=getR
 
 // ==================== SPOTIFY API LOGIC (PKCE FLOW) ====================
 const CLIENT_ID = 'e0b5648d4fa24d71bb84ced025a90868';
-const REDIRECT_URI = window.location.origin + '/'; // HARUS SAMA DENGAN DI SPOTIFY DASHBOARD
+const REDIRECT_URI = window.location.origin + '/'; // Pastikan di dashboard sama persis
 const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 const TOKEN_ENDPOINT = 'https://accounts.spotify.com/api/token';
 const SCOPES = 'user-read-playback-state user-modify-playback-state streaming user-read-email user-read-private';
+
 let accessToken = localStorage.getItem('spotify_access_token') || null;
 let refreshToken = localStorage.getItem('spotify_refresh_token') || null;
 let player = null;
 let deviceId = null;
 
-// PKCE Helper
 function generateRandomString(length) {
   let text = '';
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
   return text;
 }
+
 async function generateCodeChallenge(codeVerifier) {
   const data = new TextEncoder().encode(codeVerifier);
   const digest = await window.crypto.subtle.digest('SHA-256', data);
@@ -1016,20 +1017,28 @@ async function getToken(code) {
   return await response.json();
 }
 
-// Check URL for code
 async function handleSpotifyCallback() {
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code');
+  
   if (code) {
+    // Bersihkan URL
     window.history.replaceState({}, document.title, window.location.pathname);
+    
     try {
       const data = await getToken(code);
-      accessToken = data.access_token;
-      refreshToken = data.refresh_token;
-      localStorage.setItem('spotify_access_token', accessToken);
-      localStorage.setItem('spotify_refresh_token', refreshToken);
-      initSpotifyPlayer(); // Initialize player after getting token
-    } catch(e) { console.error('Spotify Token Error', e); }
+      if (data.access_token) {
+        accessToken = data.access_token;
+        refreshToken = data.refresh_token;
+        localStorage.setItem('spotify_access_token', accessToken);
+        localStorage.setItem('spotify_refresh_token', refreshToken);
+      } else {
+        console.error('Token Error:', data);
+        alert('Gagal mendapatkan token dari Spotify. Cek console.');
+      }
+    } catch(e) { 
+      console.error('Fetch Token Error', e); 
+    }
   }
 }
 
@@ -1038,10 +1047,10 @@ function logoutSpotify() {
   localStorage.removeItem('spotify_access_token');
   localStorage.removeItem('spotify_refresh_token');
   if(player) player.disconnect();
+  player = null;
   checkSpotifyState();
 }
 
-// UI State
 function checkSpotifyState() {
   if (accessToken) {
     $('spotify-login-section').style.display = 'none';
@@ -1050,6 +1059,7 @@ function checkSpotifyState() {
   } else {
     $('spotify-login-section').style.display = 'block';
     $('spotify-player-section').style.display = 'none';
+    $('spotify-user-name').textContent = 'Memuat...';
   }
 }
 
@@ -1058,13 +1068,21 @@ async function fetchSpotifyUser() {
     const res = await fetch('https://api.spotify.com/v1/me', {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
-    if(res.status === 401) { logoutSpotify(); return; }
+    
+    if(res.status === 401) { 
+      // Token expired/invalid
+      logoutSpotify(); 
+      return; 
+    }
+    
     const data = await res.json();
-    $('spotify-user-name').textContent = data.display_name || data.id;
-  } catch(e) { console.error(e); }
+    $('spotify-user-name').textContent = data.display_name || data.id || 'User';
+  } catch(e) { 
+    console.error('Fetch User Error:', e);
+    $('spotify-user-name').textContent = 'Gagal memuat profil (CORS/Network)';
+  }
 }
 
-// Search
 async function searchSpotify() {
   const q = $('spotify-search-input').value.trim();
   if(!q) return;
@@ -1075,10 +1093,12 @@ async function searchSpotify() {
     const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=10`, {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     });
-    if(res.status === 401) { logoutSpotify(); return; }
-    const data = await res.json();
     
+    if(res.status === 401) { logoutSpotify(); return; }
+    
+    const data = await res.json();
     c.innerHTML = '';
+    
     if(!data.tracks || !data.tracks.items.length) {
       c.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;">Lagu tidak ditemukan.</p>';
       return;
@@ -1104,14 +1124,13 @@ async function searchSpotify() {
   }
 }
 
-// Spotify Web Playback SDK Logic
+// Spotify Web Playback SDK
 window.onSpotifyWebPlaybackSDKReady = () => {
-  if(!accessToken) return;
-  initSpotifyPlayer();
+  if(accessToken) initSpotifyPlayer();
 };
 
 function initSpotifyPlayer() {
-  if (player) return; // Prevent double init
+  if (player || !accessToken) return;
 
   player = new Spotify.Player({
     name: 'XION PROJECT Web Player',
@@ -1120,25 +1139,26 @@ function initSpotifyPlayer() {
   });
 
   player.addListener('ready', ({ device_id }) => {
-    console.log('Ready with Device ID', device_id);
+    console.log('Spotify Player Ready:', device_id);
     deviceId = device_id;
   });
 
   player.addListener('not_ready', ({ device_id }) => {
-    console.log('Device ID has gone offline', device_id);
+    console.log('Spotify Player Offline:', device_id);
   });
 
   player.addListener('initialization_error', ({ message }) => {
-    alert('Gagal inisialisasi Spotify (Pastikan akun Premium): ' + message);
+    console.error('Spotify Init Error:', message);
   });
 
   player.addListener('authentication_error', ({ message }) => {
-    alert('Sesi Spotify habis, silakan login ulang.');
+    console.error('Spotify Auth Error:', message);
     logoutSpotify();
   });
 
   player.addListener('account_error', ({ message }) => {
-    alert('Akun Spotify kamu harus Premium untuk memutar lagu di web!');
+    console.error('Spotify Account Error:', message);
+    alert('Gagal memutar: Akun Spotify kamu harus PREMIUM untuk menggunakan Web Player!');
   });
 
   player.connect();
@@ -1146,7 +1166,7 @@ function initSpotifyPlayer() {
 
 async function playSpotifyTrack(trackUri) {
   if(!deviceId) {
-    alert('Player belum siap. Tunggu beberapa detik atau pastikan akun Premium.');
+    alert('Player Spotify belum siap. Pastikan akun Premium & tunggu beberapa detik.');
     return;
   }
   
@@ -1161,23 +1181,304 @@ async function playSpotifyTrack(trackUri) {
     });
     
     if(res.status === 403) {
-      alert('Gagal memutar. Pastikan akun Spotify kamu Premium.');
+      alert('Akses ditolak. Pastikan akun Spotify kamu Premium!');
     } else if (res.status === 404) {
       alert('Device tidak ditemukan. Coba refresh halaman.');
     }
   } catch(e) {
-    console.error(e);
+    console.error('Play Error:', e);
   }
 }
 
-// Initialize Spotify Check on load
+// Init saat load
 window.addEventListener('load', async () => {
   await handleSpotifyCallback();
   checkSpotifyState();
 });
 
-// Initial loads
+// ==================== NEW TOOLS LOGIC ====================
+
+// 1. GEMPA BMKG (FIXED CORS PROXY)
+async function loadGempa() {
+  const c = $('gempa-container');
+  c.innerHTML = '<p style="color:var(--muted);font-size:11px">Memuat data gempa...</p>';
+  try {
+    const targetUrl = 'https://data.bmkg.go.id/DataMKG/TEWS/autogempa.json';
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+    
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const json = await res.json();
+    
+    if (!json.Infogempa || !json.Infogempa.gempa) {
+      throw new Error('Format data BMKG tidak valid');
+    }
+    
+    const g = json.Infogempa.gempa;
+    
+    c.innerHTML = `
+      <div class="bmkg-card">
+        <h3 class="font-cyber">M ${g.Magnitude}</h3>
+        <p><strong>Kedalaman:</strong> ${g.Kedalaman}</p>
+        <p><strong>Wilayah:</strong> ${g.Wilayah}</p>
+        <p><strong>Waktu:</strong> ${g.Tanggal}, ${g.Jam}</p>
+        <p><strong>Koordinat:</strong> ${g.Lintang}, ${g.Bujur}</p>
+        <p><strong>Potensi:</strong> ${g.Potensi}</p>
+        <p style="margin-top:10px;font-size:10px;color:var(--muted)">Dirasakan di: ${g.Dirasakan}</p>
+      </div>
+      <p style="font-size:10px;color:var(--muted);margin-top:10px">Sumber: BMKG Indonesia</p>
+    `;
+  } catch (e) {
+    console.error('Gempa error:', e);
+    c.innerHTML = `<p style="color:#ef7777;font-size:11px">Gagal memuat data gempa.<br>${e.message}</p>
+    <button class="btn-secondary" style="margin-top:10px" onclick="loadGempa()">COBA LAGI</button>`;
+  }
+}
+
+// 2. QR GENERATOR
+function generateQR() {
+  const text = $('qr-input').value.trim();
+  if (!text) { alert('Masukkan teks atau URL terlebih dahulu!'); return; }
+  
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(text)}`;
+  
+  $('qr-image').src = qrUrl;
+  $('qr-download').href = qrUrl;
+  $('qr-result').style.display = 'block';
+}
+
+// 3. CUACA
+async function searchCuaca() {
+  const city = $('cuaca-input').value.trim();
+  if (!city) { alert('Masukkan nama kota!'); return; }
+  
+  const c = $('cuaca-container');
+  c.innerHTML = '<p style="color:var(--muted);font-size:11px">Mencari lokasi...</p>';
+  
+  try {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=id&format=json`);
+    const geoData = await geoRes.json();
+    
+    if (!geoData.results || geoData.results.length === 0) {
+      throw new Error('Kota tidak ditemukan');
+    }
+    
+    const loc = geoData.results[0];
+    const lat = loc.latitude;
+    const lon = loc.longitude;
+    
+    c.innerHTML = '<p style="color:var(--muted);font-size:11px">Mengambil data cuaca...</p>';
+    
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`);
+    const wData = await weatherRes.json();
+    
+    const current = wData.current;
+    const temp = current.temperature_2m;
+    const hum = current.relative_humidity_2m;
+    const wind = current.wind_speed_10m;
+    const code = current.weather_code;
+    
+    const weatherMap = {
+      0: 'Cerah ☀️', 1: 'Cerah Berawan 🌤️', 2: 'Berawan ⛅', 3: 'Mendung ☁️',
+      45: 'Berkabut 🌫️', 48: 'Kabut Tebal 🌫️', 51: 'Gerimis Ringan 🌦️',
+      53: 'Gerimis 🌧️', 55: 'Gerimis Lebat 🌧️', 61: 'Hujan Ringan 🌧️',
+      63: 'Hujan 🌧️', 65: 'Hujan Lebat 🌧️', 71: 'Salju ❄️', 80: 'Hujan Lokal 🌦️',
+      95: 'Badai Petir ⛈️'
+    };
+    const weatherDesc = weatherMap[code] || 'Tidak Diketahui';
+    
+    c.innerHTML = `
+      <div class="bmkg-card" style="text-align:left">
+        <h3 class="font-cyber" style="font-size:16px">${loc.name}, ${loc.country}</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <div>
+            <p style="font-size:28px;font-weight:800;color:var(--hoshino-pink)">${temp}°C</p>
+            <p style="font-size:12px;color:var(--hoshino-yellow)">${weatherDesc}</p>
+          </div>
+          <div style="text-align:right;font-size:11px;color:var(--muted)">
+            <p>💧 ${hum}%</p>
+            <p>💨 ${wind} km/j</p>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:10px;color:var(--muted);margin-top:10px">Sumber: Open-Meteo</p>
+    `;
+  } catch (e) {
+    c.innerHTML = `<p style="color:#ef7777;font-size:11px">Gagal memuat cuaca.<br>${e.message}</p>`;
+  }
+}
+
+// ==================== MANGA READER LOGIC ====================
+const MANGA_PROXY = ""; 
+const MANGA_API = "https://api.mangadex.org";
+const MANGA_CDN = "https://uploads.mangadex.org";
+
+function getMangaApiUrl(path) {
+  return MANGA_PROXY ? MANGA_PROXY + '/api' + path : MANGA_API + path;
+}
+function getMangaImageUrl(path) {
+  return MANGA_PROXY ? MANGA_PROXY + path : MANGA_CDN + path;
+}
+
+async function searchManga() {
+  const q = $('manga-search-input').value.trim();
+  if (!q) return;
+  const list = $('manga-list');
+  list.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;grid-column:1/-1;padding:20px">Mencari manga...</p>';
+  
+  try {
+    const res = await fetch(getMangaApiUrl(`/manga?title=${encodeURIComponent(q)}&limit=20&includes[]=cover_art&contentRating[]=safe&contentRating[]=suggestive`));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    list.innerHTML = '';
+    
+    if (!data.data || data.data.length === 0) {
+      list.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;grid-column:1/-1;padding:20px">Manga tidak ditemukan.</p>';
+      return;
+    }
+    
+    data.data.forEach(manga => {
+      const title = manga.attributes.title.en || manga.attributes.title.id || Object.values(manga.attributes.title)[0] || 'Unknown';
+      const coverRel = manga.relationships.find(r => r.type === 'cover_art');
+      let coverUrl = 'https://via.placeholder.com/200x300/1e1533/a99cc4?text=No+Cover';
+      if (coverRel && coverRel.attributes) {
+        coverUrl = getMangaImageUrl(`/covers/${manga.id}/${coverRel.attributes.fileName}.256.jpg`);
+      }
+      
+      const card = document.createElement('div');
+      card.className = 'manga-card';
+      card.innerHTML = `
+        <img src="${coverUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/200x300/1e1533/a99cc4?text=Error'">
+        <div>
+          <h4>${title}</h4>
+          <span>${(manga.attributes.status || 'Unknown').toUpperCase()}</span>
+        </div>
+      `;
+      card.onclick = () => loadMangaChapters(manga.id, title);
+      list.appendChild(card);
+    });
+  } catch (e) {
+    list.innerHTML = `<p style="text-align:center;color:#ef7777;font-size:11px;grid-column:1/-1;padding:20px">Gagal mencari manga: ${e.message}</p>`;
+  }
+}
+
+async function loadMangaChapters(mangaId, title) {
+  $('manga-search-view').style.display = 'none';
+  $('manga-chapters-view').style.display = 'block';
+  $('manga-reader-view').style.display = 'none';
+  
+  $('manga-detail-info').innerHTML = `<span class="hero-tag font-mono">MANGA DETAILS</span><h2 class="font-cyber" style="font-size:18px">${title}</h2><p>Memuat daftar chapter...</p>`;
+  const list = $('chapter-list');
+  list.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:20px">Memuat chapter...</p>';
+  
+  try {
+    const res = await fetch(getMangaApiUrl(`/manga/${mangaId}/feed?translatedLanguage[]=en&translatedLanguage[]=id&order[chapter]=asc&limit=500`));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    list.innerHTML = '';
+    
+    if (!data.data || data.data.length === 0) {
+      list.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:20px">Tidak ada chapter tersedia (ID/EN).</p>';
+      return;
+    }
+    
+    const chapters = {};
+    data.data.forEach(ch => {
+      const chNum = ch.attributes.chapter || '?';
+      if (!chapters[chNum] || ch.attributes.translatedLanguage === 'id') {
+        chapters[chNum] = ch;
+      }
+    });
+    
+    const sortedChapters = Object.values(chapters).sort((a, b) => {
+      const numA = parseFloat(a.attributes.chapter) || 0;
+      const numB = parseFloat(b.attributes.chapter) || 0;
+      return numA - numB;
+    });
+    
+    $('manga-detail-info').innerHTML = `<span class="hero-tag font-mono">MANGA DETAILS</span><h2 class="font-cyber" style="font-size:18px">${title}</h2><p>${sortedChapters.length} Chapter ditemukan</p>`;
+    
+    sortedChapters.forEach(ch => {
+      const chTitle = `Chapter ${ch.attributes.chapter || '?'} ${ch.attributes.title ? '- ' + ch.attributes.title : ''}`;
+      const row = document.createElement('div');
+      row.className = 'action-card';
+      row.style.cssText = 'cursor:pointer;padding:12px;display:flex;justify-content:space-between;align-items:center';
+      row.innerHTML = `<h4 style="font-size:11px;margin-bottom:0">${chTitle}</h4><span class="pill-badge" style="font-size:8px">${ch.attributes.translatedLanguage.toUpperCase()}</span>`;
+      row.onclick = () => loadMangaPages(ch.id, chTitle);
+      list.appendChild(row);
+    });
+  } catch (e) {
+    list.innerHTML = `<p style="text-align:center;color:#ef7777;font-size:11px;padding:20px">Gagal memuat chapter: ${e.message}</p>`;
+  }
+}
+
+async function loadMangaPages(chapterId, chTitle) {
+  $('manga-chapters-view').style.display = 'none';
+  $('manga-reader-view').style.display = 'block';
+  $('reader-chapter-title').textContent = chTitle;
+  
+  const container = $('manga-pages');
+  container.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:20px">Memuat halaman...</p>';
+  window.scrollTo(0, 0);
+  
+  try {
+    const res = await fetch(getMangaApiUrl(`/at-home/server/${chapterId}`));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    
+    if (!data.baseUrl || !data.chapter) throw new Error("Data chapter tidak valid");
+    
+    const baseUrl = data.baseUrl;
+    const hash = data.chapter.hash;
+    const pages = data.chapter.data; 
+    
+    container.innerHTML = '';
+    
+    pages.forEach((filename, index) => {
+      const imgUrl = MANGA_PROXY 
+        ? `${MANGA_PROXY}/data/${hash}/${filename}` 
+        : `${baseUrl}/data/${hash}/${filename}`;
+        
+      const img = document.createElement('img');
+      img.className = 'manga-reader-img';
+      img.src = imgUrl;
+      img.loading = 'lazy';
+      img.alt = `Page ${index + 1}`;
+      
+      img.onerror = () => {
+        if (MANGA_PROXY && img.src.includes(MANGA_PROXY)) {
+          img.src = `${baseUrl}/data/${hash}/${filename}`;
+        } else {
+          img.alt = `Gagal memuat halaman ${index + 1}`;
+          img.style.height = '100px';
+          img.style.objectFit = 'contain';
+          img.src = 'https://via.placeholder.com/400x100/0d0819/ef7777?text=Gagal+Memuat+Gambar';
+        }
+      };
+      
+      container.appendChild(img);
+    });
+  } catch (e) {
+    container.innerHTML = `<p style="text-align:center;color:#ef7777;font-size:11px;padding:20px">Gagal memuat halaman: ${e.message}</p>`;
+  }
+}
+
+function backToMangaSearch() {
+  $('manga-chapters-view').style.display = 'none';
+  $('manga-reader-view').style.display = 'none';
+  $('manga-search-view').style.display = 'block';
+  $('manga-search-input').value = '';
+  $('manga-list').innerHTML = '';
+}
+
+function backToChapters() {
+  $('manga-reader-view').style.display = 'none';
+  $('manga-chapters-view').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
 renderSenders();updateXionProfile();renderChatMessages();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-  </html>
+                                                                                                                                                                                                                                                                                  </html>
