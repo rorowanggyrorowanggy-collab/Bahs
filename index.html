@@ -303,6 +303,34 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 .music-item p{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .music-item button{border:0;background:linear-gradient(90deg,var(--hoshino-pink),var(--hoshino-blue));color:#0d0819;padding:8px 12px;border-radius:8px;font-size:10px;font-weight:800;flex-shrink:0}
 
+/* ===== STORIES (WA STYLE) ===== */
+.story-bar{display:flex;gap:12px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;margin-bottom:16px}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0}
+.story-avatar-wrap{width:60px;height:60px;border-radius:50%;padding:2px;background:linear-gradient(45deg,var(--hoshino-pink),var(--hoshino-blue));position:relative}
+.story-avatar-wrap.mine{background:linear-gradient(45deg,#555,#333);padding:2px}
+.story-avatar-inner{width:100%;height:100%;border-radius:50%;background:var(--bg);padding:2px}
+.story-avatar-inner img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.story-add-icon{position:absolute;bottom:0;right:0;background:var(--blue);color:white;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10px;border:2px solid var(--bg)}
+.story-name{font-size:9px;color:var(--muted);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Story Viewer Overlay */
+.story-viewer{position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column}
+.story-viewer.active{display:flex}
+.story-progress-container{display:flex;gap:4px;padding:10px;position:absolute;top:0;left:0;right:0;z-index:10}
+.story-progress-bar{height:3px;background:rgba(255,255,255,.3);border-radius:2px;flex:1;overflow:hidden}
+.story-progress-fill{height:100%;background:#fff;width:0%;transition:width linear}
+.story-header{position:absolute;top:25px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;z-index:10;color:#fff;padding:5px}
+.story-user-info{display:flex;align-items:center;gap:8px}
+.story-user-info img{width:35px;height:35px;border-radius:50%;object-fit:cover;border:1px solid #fff}
+.story-user-info span{font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}
+.story-close-btn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:5px}
+.story-image-container{flex:1;display:flex;justify-content:center;align-items:center;overflow:hidden;position:relative}
+.story-image-container img{max-width:100%;max-height:100%;object-fit:contain}
+.story-caption{position:absolute;bottom:10%;left:10%;right:10%;color:#fff;font-size:16px;text-align:center;text-shadow:0 2px 5px #000;background:rgba(0,0,0,.5);padding:10px;border-radius:8px;display:none}
+.story-nav-zone{position:absolute;top:0;bottom:0;width:50%;z-index:5}
+.story-nav-left{left:0}
+.story-nav-right{right:0}
+
 @media(max-width:350px){.tools-grid{grid-template-columns:repeat(2,1fr)}.prayer-grid{grid-template-columns:repeat(2,1fr)}.role-grid{grid-template-columns:1fr}.hoshino-text h1{font-size:24px;letter-spacing:3px}.live-clock-pill{font-size:9px;padding:4px 7px}.about-colors{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -421,6 +449,12 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 </header>
 <div class="app-body">
   <div id="tab-home" class="view-section active">
+    
+    <!-- STORIES BAR -->
+    <div class="story-bar" id="story-bar">
+      <!-- Diisi via JS -->
+    </div>
+
     <div class="hero-banner">
       <span class="hero-tag font-mono">XION / COMMAND CENTER</span>
       <h2 class="font-cyber">XION CORE</h2>
@@ -532,6 +566,39 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
   <button class="nav-btn" id="nav-tools" onclick="switchTab('tools')"><i class="fa-solid fa-toolbox"></i>TOOLS</button>
 </nav>
 </section>
+
+<!-- STORY VIEWER OVERLAY -->
+<div id="story-viewer" class="story-viewer">
+  <div class="story-progress-container" id="story-progress-container"></div>
+  <div class="story-header">
+    <div class="story-user-info">
+      <img id="story-viewer-avatar" src="" alt="">
+      <span id="story-viewer-name"></span>
+    </div>
+    <button class="story-close-btn" onclick="closeStoryViewer()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="story-image-container">
+    <div class="story-nav-zone story-nav-left" onclick="prevStory()"></div>
+    <div class="story-nav-zone story-nav-right" onclick="nextStory()"></div>
+    <img id="story-viewer-image" src="" alt="Story">
+    <div id="story-viewer-caption" class="story-caption"></div>
+  </div>
+</div>
+
+<!-- ADD STORY MODAL -->
+<div id="modal-add-story" class="modal-overlay">
+  <div class="modal-card">
+    <h3 class="font-cyber" style="margin-bottom:15px">BUAT STORY BARU</h3>
+    <label style="font-size:10px;color:var(--muted)">Pilih Gambar</label>
+    <input type="file" id="story-file-input" accept="image/*" class="field" style="padding:8px">
+    <label style="font-size:10px;color:var(--muted)">Teks (Opsional)</label>
+    <input type="text" id="story-text-input" class="field" placeholder="Tulis caption...">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn-secondary" onclick="closeModal('modal-add-story')">BATAL</button>
+      <button class="btn-primary" style="margin:0" onclick="postStory()">POSTING</button>
+    </div>
+  </div>
+</div>
 
 <!-- SUBPAGE: MUSIC (SPOTIFY) -->
 <div id="sub-music" class="subpage">
@@ -793,7 +860,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div class="about-block">
       <div class="about-header"><i class="fa-solid fa-road" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">ROADMAP</h3></div>
       <div class="about-timeline">
-        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player, Google Login</div></div>
+        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player, Google Login, WA Story</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--hoshino-pink)"></span><div><strong>V5.0 (Next)</strong> — Firebase real-time chat, payment gateway, PWA install</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--muted)"></span><div><strong>V6.0 (Future)</strong> — Multi-language, AI assistant, cloud sync</div></div>
       </div>
@@ -881,11 +948,10 @@ function parseJwt(token) {
 
 function handleGoogleLogin(response) {
   const payload = parseJwt(response.credential);
-  // Gunakan nama depan atau email sebagai username
   const gName = payload.given_name || payload.name || payload.email.split('@')[0];
   
   currentUser = gName;
-  currentRole = 'MEMBER'; // Beri role default untuk login Google
+  currentRole = 'MEMBER';
   updateXionProfile();
   
   $('bot-msg').textContent = 'Yahho~ Akses Google diterima! Selamat datang, Sensei!';
@@ -910,6 +976,197 @@ window.onload = function () {
     );
   }
 };
+// ============================================================
+
+// ==================== STORIES LOGIC (WA STYLE) ====================
+let stories = JSON.parse(localStorage.getItem('xion_stories')) || [];
+let currentStoryIndex = 0;
+let storyTimer = null;
+let storyStartTime = 0;
+let storyDuration = 5000; // 5 detik per story
+let isStoryPaused = false;
+
+// Seed dummy stories if empty
+if (stories.length === 0) {
+  stories = [
+    { id: '1', user: 'Hoshino', avatar: 'https://static.wikia.nocookie.net/blue-archive/images/0/0f/Hoshino_Takanashi.png/revision/latest/scale-to-width-down/150', image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=500&q=80', text: 'Yahho~ Hari ini cerah ya, Sensei!', timestamp: Date.now() - 3600000 },
+    { id: '2', user: 'Luffy', avatar: 'https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/150', image: 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&w=500&q=80', text: 'Aku akan menjadi Raja Bajak Laut!', timestamp: Date.now() - 7200000 }
+  ];
+  localStorage.setItem('xion_stories', JSON.stringify(stories));
+}
+
+function renderStories() {
+  const bar = $('story-bar');
+  bar.innerHTML = '';
+  
+  // Add "My Story" button
+  const myStoryDiv = document.createElement('div');
+  myStoryDiv.className = 'story-item';
+  myStoryDiv.onclick = () => openModal('modal-add-story');
+  myStoryDiv.innerHTML = `
+    <div class="story-avatar-wrap mine">
+      <div class="story-avatar-inner">
+        <img src="https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/100" alt="Me">
+      </div>
+      <div class="story-add-icon"><i class="fa-solid fa-plus"></i></div>
+    </div>
+    <span class="story-name">Story Saya</span>
+  `;
+  bar.appendChild(myStoryDiv);
+  
+  // Render other stories
+  stories.forEach((s, index) => {
+    // Cek expired (24 jam)
+    if (Date.now() - s.timestamp > 86400000) return;
+    
+    const div = document.createElement('div');
+    div.className = 'story-item';
+    div.onclick = () => openStoryViewer(index);
+    div.innerHTML = `
+      <div class="story-avatar-wrap">
+        <div class="story-avatar-inner">
+          <img src="${s.avatar}" alt="${s.user}" onerror="this.src='https://via.placeholder.com/60'">
+        </div>
+      </div>
+      <span class="story-name">${s.user}</span>
+    `;
+    bar.appendChild(div);
+  });
+}
+
+function postStory() {
+  const fileInput = $('story-file-input');
+  const textInput = $('story-text-input').value.trim();
+  
+  if (!fileInput.files || !fileInput.files[0]) {
+    alert('Pilih gambar terlebih dahulu!');
+    return;
+  }
+  
+  const file = fileInput.files[0];
+  if (file.size > 2 * 1024 * 1024) { // Max 2MB untuk LocalStorage
+    alert('Ukuran gambar maksimal 2MB ya Sensei!');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const newStory = {
+      id: Date.now().toString(),
+      user: currentUser,
+      avatar: 'https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/100',
+      image: e.target.result,
+      text: textInput,
+      timestamp: Date.now()
+    };
+    
+    stories.unshift(newStory);
+    try {
+      localStorage.setItem('xion_stories', JSON.stringify(stories));
+    } catch (err) {
+      alert('Penyimpanan penuh! Hapus story lama atau gunakan gambar yang lebih kecil.');
+      stories.shift(); // revert
+      return;
+    }
+    
+    // Reset form
+    fileInput.value = '';
+    $('story-text-input').value = '';
+    closeModal('modal-add-story');
+    renderStories();
+  };
+  reader.readAsDataURL(file);
+}
+
+function openStoryViewer(index) {
+  if (index >= stories.length) {
+    closeStoryViewer();
+    return;
+  }
+  
+  currentStoryIndex = index;
+  const story = stories[index];
+  
+  if (Date.now() - story.timestamp > 86400000) {
+    nextStory();
+    return;
+  }
+  
+  $('story-viewer').classList.add('active');
+  $('story-viewer-avatar').src = story.avatar;
+  $('story-viewer-name').textContent = story.user;
+  $('story-viewer-image').src = story.image;
+  
+  if (story.text) {
+    $('story-viewer-caption').textContent = story.text;
+    $('story-viewer-caption').style.display = 'block';
+  } else {
+    $('story-viewer-caption').style.display = 'none';
+  }
+  
+  // Setup progress bar
+  const container = $('story-progress-container');
+  container.innerHTML = '';
+  stories.forEach((_, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'story-progress-bar';
+    const fill = document.createElement('div');
+    fill.className = 'story-progress-fill';
+    if (i < index) fill.style.width = '100%';
+    bar.appendChild(fill);
+    container.appendChild(bar);
+  });
+  
+  startStoryTimer();
+}
+
+function startStoryTimer() {
+  clearInterval(storyTimer);
+  isStoryPaused = false;
+  
+  const fill = document.querySelectorAll('.story-progress-fill')[currentStoryIndex];
+  if (!fill) return;
+  
+  fill.style.transition = 'none';
+  fill.style.width = '0%';
+  
+  setTimeout(() => {
+    fill.style.transition = `width ${storyDuration}ms linear`;
+    fill.style.width = '100%';
+    storyStartTime = Date.now();
+  }, 50);
+  
+  storyTimer = setTimeout(() => {
+    nextStory();
+  }, storyDuration);
+}
+
+function nextStory() {
+  clearTimeout(storyTimer);
+  const fill = document.querySelectorAll('.story-progress-fill')[currentStoryIndex];
+  if (fill) fill.style.width = '100%';
+  
+  if (currentStoryIndex < stories.length - 1) {
+    openStoryViewer(currentStoryIndex + 1);
+  } else {
+    closeStoryViewer();
+  }
+}
+
+function prevStory() {
+  clearTimeout(storyTimer);
+  if (currentStoryIndex > 0) {
+    openStoryViewer(currentStoryIndex - 1);
+  } else {
+    startStoryTimer(); // Ulangi story pertama
+  }
+}
+
+function closeStoryViewer() {
+  clearTimeout(storyTimer);
+  $('story-viewer').classList.remove('active');
+}
+
 // ============================================================
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active')}
@@ -965,7 +1222,7 @@ function goToIntro(){clearInterval(splashTimer);clearInterval(splashPhaseTimer);
 function renderIntro(){const d=introData[introStep],bg=document.querySelector('.lambo-bg-video'),card=$('intro-card-video');if(bg&&bg.src!==d.video){bg.src=d.video;bg.load()}if(card&&card.src!==d.video){card.src=d.video;card.load()}playVideo(bg);playVideo(card);$('lambo-model-badge').textContent=d.model;$('intro-step-label').textContent='0'+(introStep+1)+' / 03';$('intro-icon-el').className='fa-solid '+d.icon;$('intro-tag').textContent=d.tag;$('intro-title').innerHTML=d.title;$('intro-desc').textContent=d.desc;$('intro-b1').textContent=d.b1;$('intro-b2').textContent=d.b2;[0,1,2].forEach(i=>$('dot-'+i).classList.toggle('active',i===introStep));$('intro-next-btn').innerHTML=d.btn+' <i class="fa-solid fa-arrow-right"></i>'}
 function nextIntro(){if(introStep<2){introStep++;renderIntro()}else{document.querySelectorAll('video').forEach(v=>v.pause());showScreen('screen-app');initDashboard()}}
 
-function initDashboard(){const n=new Date();$('today-date').textContent=n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();renderSenders();loadSurahs();loadNews();loadPrayerTimes();updateXionProfile();renderChatMessages();renderRoleStore();renderRoleHistory();renderAsmaList();showAsma();updateClocks()}
+function initDashboard(){const n=new Date();$('today-date').textContent=n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();renderStories();renderSenders();loadSurahs();loadNews();loadPrayerTimes();updateXionProfile();renderChatMessages();renderRoleStore();renderRoleHistory();renderAsmaList();showAsma();updateClocks()}
 function switchTab(tab){const s=$('tab-'+tab);if(!s)return;document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));s.classList.add('active');document.querySelectorAll('.nav-btn').forEach(v=>v.classList.remove('active'));const nb=$('nav-'+tab);if(nb)nb.classList.add('active');if(tab==='chat')renderChatMessages()}
 function toggleDrawer(open){$('sidebar-drawer').classList.toggle('open',open);$('drawer-overlay').classList.toggle('active',open)}
 function drawerGo(tab){switchTab(tab);toggleDrawer(false)}
@@ -1302,4 +1559,4 @@ function backToChapters() {
 renderSenders();updateXionProfile();renderChatMessages();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-          </html>
+  </html>
