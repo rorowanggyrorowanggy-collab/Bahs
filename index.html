@@ -993,11 +993,11 @@ let currentStoryIndex = 0;
 let storyTimer = null;
 let storyDuration = 5000; // 5 detik per story
 
-// Seed dummy stories if empty (Menggunakan UI Avatars yang stabil 100%)
+// Seed dummy stories if empty (Menggunakan DiceBear & MyAnimeList yang stabil 100%)
 if (stories.length === 0) {
   stories = [
-    { id: '1', user: 'Hoshino', avatar: 'https://ui-avatars.com/api/?name=Hoshino&background=FFB6D9&color=0d0819&rounded=true&size=150', image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=500&q=80', text: 'Yahho~ Hari ini cerah ya, Sensei!', timestamp: Date.now() - 3600000 },
-    { id: '2', user: 'Luffy', avatar: 'https://ui-avatars.com/api/?name=Luffy&background=7BC7FF&color=0d0819&rounded=true&size=150', image: 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&w=500&q=80', text: 'Aku akan menjadi Raja Bajak Laut!', timestamp: Date.now() - 7200000 }
+    { id: '1', user: 'Hoshino', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Hoshino', image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=500&q=80', text: 'Yahho~ Hari ini cerah ya, Sensei!', timestamp: Date.now() - 3600000 },
+    { id: '2', user: 'Luffy', avatar: 'https://cdn.myanimelist.net/images/characters/9/310307.jpg', image: 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&w=500&q=80', text: 'Aku akan menjadi Raja Bajak Laut!', timestamp: Date.now() - 7200000 }
   ];
   localStorage.setItem('xion_stories', JSON.stringify(stories));
 }
@@ -1013,7 +1013,7 @@ function renderStories() {
   myStoryDiv.innerHTML = `
     <div class="story-avatar-wrap mine">
       <div class="story-avatar-inner">
-        <img src="https://ui-avatars.com/api/?name=${currentUser}&background=555&color=fff&rounded=true&size=100" alt="Me">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser}" alt="Me">
       </div>
       <div class="story-add-icon"><i class="fa-solid fa-plus"></i></div>
     </div>
@@ -1032,7 +1032,7 @@ function renderStories() {
     div.innerHTML = `
       <div class="story-avatar-wrap">
         <div class="story-avatar-inner">
-          <img src="${s.avatar}" alt="${s.user}" onerror="this.src='https://ui-avatars.com/api/?name=${s.user}&background=333&color=fff&rounded=true&size=150'">
+          <img src="${s.avatar}" alt="${s.user}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Error'">
         </div>
       </div>
       <span class="story-name">${s.user}</span>
@@ -1055,7 +1055,7 @@ function postStory() {
     const newStory = {
       id: Date.now().toString(),
       user: currentUser,
-      avatar: `https://ui-avatars.com/api/?name=${currentUser}&background=555&color=fff&rounded=true&size=150`,
+      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser}`,
       image: imageData || null,
       text: textInput,
       timestamp: Date.now()
@@ -1824,4 +1824,4 @@ window.addEventListener('load', async () => {
 renderSenders();updateXionProfile();renderChatMessages();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-                                                                                       </html>
+          </html>
