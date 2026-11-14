@@ -347,7 +347,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
   </div>
   <div class="login-card">
     <div class="logo-emblem halo-emblem">
-      <img src="https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/200" alt="Luffy" onerror="this.onerror=null;this.src='https://cdn.myanimelist.net/images/characters/9/310307.jpg'">
+      <img src="https://cdn.myanimelist.net/images/characters/9/310307.jpg" alt="Luffy" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Luffy&background=FFB6D9&color=0d0819&rounded=true'">
     </div>
     <div class="login-title"><span>WELCOME BACK • SENSEI ACCESS</span><h1 class="font-cyber">XION CORE</h1><p>Masuk ke control center kamu</p></div>
     
@@ -435,7 +435,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
   <div class="header-left">
     <button class="icon-btn" onclick="toggleDrawer(true)"><i class="fa-solid fa-bars"></i></button>
     <div class="logo-emblem halo-emblem" style="width:34px;height:34px;margin:0;box-shadow:0 0 15px rgba(255,126,184,.4)">
-      <img src="https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/100" alt="Luffy" style="width:26px;height:26px" onerror="this.onerror=null;this.src='https://cdn.myanimelist.net/images/characters/9/310307.jpg'">
+      <img src="https://cdn.myanimelist.net/images/characters/9/310307.jpg" alt="Luffy" style="width:26px;height:26px" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Luffy&background=FFB6D9&color=0d0819&rounded=true'">
     </div>
     <div class="header-title">
       <h3 class="font-cyber">XION PROJECT</h3>
@@ -547,7 +547,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div class="hero-banner" style="text-align:center">
       <span class="hero-tag">PERSONAL IDENTITY / XION</span>
       <div class="logo-emblem halo-emblem">
-        <img src="https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/200" alt="Luffy" onerror="this.onerror=null;this.src='https://cdn.myanimelist.net/images/characters/9/310307.jpg'">
+        <img src="https://cdn.myanimelist.net/images/characters/9/310307.jpg" alt="Luffy" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=Luffy&background=FFB6D9&color=0d0819&rounded=true'">
       </div>
       <h2 class="font-cyber" id="profile-display-name">XION_DEV</h2>
       <div id="profile-verified" style="margin:8px"></div>
@@ -978,17 +978,26 @@ window.onload = function () {
 };
 // ============================================================
 
-// ==================== STORIES LOGIC (WA STYLE FIXED) ====================
+// ==================== STORIES LOGIC (WA STYLE) ====================
 let stories = JSON.parse(localStorage.getItem('xion_stories')) || [];
+
+// AUTO-CLEANUP: Hapus story yang umurnya lebih dari 24 jam dari memori browser
+const now = Date.now();
+const validStories = stories.filter(s => (now - s.timestamp) <= 86400000);
+if (validStories.length !== stories.length) {
+  stories = validStories;
+  localStorage.setItem('xion_stories', JSON.stringify(stories));
+}
+
 let currentStoryIndex = 0;
 let storyTimer = null;
 let storyDuration = 5000; // 5 detik per story
 
-// Seed dummy stories if empty
+// Seed dummy stories if empty (Menggunakan UI Avatars yang stabil 100%)
 if (stories.length === 0) {
   stories = [
-    { id: '1', user: 'Hoshino', avatar: 'https://static.wikia.nocookie.net/blue-archive/images/0/0f/Hoshino_Takanashi.png/revision/latest/scale-to-width-down/150', image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=500&q=80', text: 'Yahho~ Hari ini cerah ya, Sensei!', timestamp: Date.now() - 3600000 },
-    { id: '2', user: 'Luffy', avatar: 'https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/150', image: 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&w=500&q=80', text: 'Aku akan menjadi Raja Bajak Laut!', timestamp: Date.now() - 7200000 }
+    { id: '1', user: 'Hoshino', avatar: 'https://ui-avatars.com/api/?name=Hoshino&background=FFB6D9&color=0d0819&rounded=true&size=150', image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=500&q=80', text: 'Yahho~ Hari ini cerah ya, Sensei!', timestamp: Date.now() - 3600000 },
+    { id: '2', user: 'Luffy', avatar: 'https://ui-avatars.com/api/?name=Luffy&background=7BC7FF&color=0d0819&rounded=true&size=150', image: 'https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&w=500&q=80', text: 'Aku akan menjadi Raja Bajak Laut!', timestamp: Date.now() - 7200000 }
   ];
   localStorage.setItem('xion_stories', JSON.stringify(stories));
 }
@@ -1004,7 +1013,7 @@ function renderStories() {
   myStoryDiv.innerHTML = `
     <div class="story-avatar-wrap mine">
       <div class="story-avatar-inner">
-        <img src="https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/100" alt="Me">
+        <img src="https://ui-avatars.com/api/?name=${currentUser}&background=555&color=fff&rounded=true&size=100" alt="Me">
       </div>
       <div class="story-add-icon"><i class="fa-solid fa-plus"></i></div>
     </div>
@@ -1023,7 +1032,7 @@ function renderStories() {
     div.innerHTML = `
       <div class="story-avatar-wrap">
         <div class="story-avatar-inner">
-          <img src="${s.avatar}" alt="${s.user}" onerror="this.src='https://via.placeholder.com/60'">
+          <img src="${s.avatar}" alt="${s.user}" onerror="this.src='https://ui-avatars.com/api/?name=${s.user}&background=333&color=fff&rounded=true&size=150'">
         </div>
       </div>
       <span class="story-name">${s.user}</span>
@@ -1046,7 +1055,7 @@ function postStory() {
     const newStory = {
       id: Date.now().toString(),
       user: currentUser,
-      avatar: 'https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest/scale-to-width-down/100',
+      avatar: `https://ui-avatars.com/api/?name=${currentUser}&background=555&color=fff&rounded=true&size=150`,
       image: imageData || null,
       text: textInput,
       timestamp: Date.now()
@@ -1815,4 +1824,4 @@ window.addEventListener('load', async () => {
 renderSenders();updateXionProfile();renderChatMessages();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-</html>
+                                                                                       </html>
