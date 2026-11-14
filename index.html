@@ -287,6 +287,13 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 .qr-result-box{background:#fff;padding:16px;border-radius:12px;display:flex;justify-content:center;align-items:center;margin-bottom:14px;min-height:200px}
 .qr-result-box img{max-width:100%;height:auto}
 
+.music-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.music-item img{width:50px;height:50px;border-radius:8px;object-fit:cover}
+.music-item div{flex:1;min-width:0}
+.music-item h4{font-size:11px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-item p{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-item button{border:0;background:linear-gradient(90deg,var(--hoshino-pink),var(--hoshino-blue));color:#0d0819;padding:8px 12px;border-radius:8px;font-size:10px;font-weight:800;flex-shrink:0}
+
 @media(max-width:350px){.tools-grid{grid-template-columns:repeat(2,1fr)}.prayer-grid{grid-template-columns:repeat(2,1fr)}.role-grid{grid-template-columns:1fr}.hoshino-text h1{font-size:24px;letter-spacing:3px}.live-clock-pill{font-size:9px;padding:4px 7px}.about-colors{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -456,7 +463,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
   </div>
 
   <div id="tab-tools" class="view-section">
-    <div class="hero-banner"><span class="hero-tag font-mono">XION / COMMAND DECK</span><h2 class="font-cyber">XION TOOLS</h2><p>Utility workspace. Pilih tools untuk menjalankan fungsi lokal.</p><span class="pill-badge">15 MODULES</span></div>
+    <div class="hero-banner"><span class="hero-tag font-mono">XION / COMMAND DECK</span><h2 class="font-cyber">XION TOOLS</h2><p>Utility workspace. Pilih tools untuk menjalankan fungsi lokal.</p><span class="pill-badge">16 MODULES</span></div>
     <div class="tools-grid">
       <div class="tool-item" onclick="runTool('Manage Server','Belum ada backend yang dikonfigurasi.')"><div class="tool-num">01 / NODE</div><div class="tool-icon"><i class="fa-solid fa-server"></i></div><h5>Manage Server</h5><span>Server Control</span></div>
       <div class="tool-item" onclick="runTool('Traffic Monitor','Status koneksi browser: '+(navigator.onLine?'ONLINE':'OFFLINE'))"><div class="tool-num">02 / NODE</div><div class="tool-icon"><i class="fa-solid fa-wave-square"></i></div><h5>Net Monitor</h5><span>Traffic Check</span></div>
@@ -473,6 +480,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
       <div class="tool-item" onclick="openSubpage('sub-gempa')"><div class="tool-num">13 / NODE</div><div class="tool-icon" style="color:#f87171"><i class="fa-solid fa-house-chimney-crack"></i></div><h5>Gempa BMKG</h5><span>Info Terkini</span></div>
       <div class="tool-item" onclick="openSubpage('sub-qr')"><div class="tool-num">14 / NODE</div><div class="tool-icon" style="color:#a78bfa"><i class="fa-solid fa-qrcode"></i></div><h5>QR Generator</h5><span>Buat QR</span></div>
       <div class="tool-item" onclick="openSubpage('sub-cuaca')"><div class="tool-num">15 / NODE</div><div class="tool-icon" style="color:#60a5fa"><i class="fa-solid fa-cloud-sun"></i></div><h5>Cuaca</h5><span>Cek Cuaca</span></div>
+      <div class="tool-item" onclick="openSubpage('sub-music')"><div class="tool-num">16 / NODE</div><div class="tool-icon" style="color:#1DB954"><i class="fa-brands fa-spotify"></i></div><h5>Putar Musik</h5><span>Spotify API</span></div>
     </div>
   </div>
 
@@ -509,6 +517,43 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
   <button class="nav-btn" id="nav-tools" onclick="switchTab('tools')"><i class="fa-solid fa-toolbox"></i>TOOLS</button>
 </nav>
 </section>
+
+<!-- SUBPAGE: MUSIC (SPOTIFY) -->
+<div id="sub-music" class="subpage">
+  <header class="app-header">
+    <div class="header-left">
+      <button class="icon-btn" onclick="closeSubpage('sub-music')"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="header-title"><h3 class="font-cyber">PUTAR MUSIK</h3><span>SPOTIFY INTEGRATION</span></div>
+    </div>
+  </header>
+  <div class="app-body">
+    <div class="hero-banner">
+      <span class="hero-tag font-mono">XION / MUSIC PLAYER</span>
+      <h2 class="font-cyber">MUSIC VERSE</h2>
+      <p>Login dengan Spotify untuk mencari dan memutar lagu (Butuh akun Premium).</p>
+    </div>
+    
+    <div id="spotify-login-section" style="text-align:center; margin-bottom: 20px;">
+      <button class="btn-primary" onclick="redirectToSpotifyAuthorize()" style="background:#1DB954; color:#fff;"><i class="fa-brands fa-spotify"></i> LOGIN DENGAN SPOTIFY</button>
+    </div>
+
+    <div id="spotify-player-section" style="display:none;">
+      <div class="action-card" style="text-align:center; border-color:#1DB954;">
+        <p style="font-size:10px;color:var(--muted)">Terhubung sebagai:</p>
+        <h4 id="spotify-user-name" style="color:#1DB954; margin-bottom:10px;">Memuat...</h4>
+        <button class="btn-secondary" onclick="logoutSpotify()" style="width:100%; border-color:#ef7777; color:#ef7777;">LOGOUT SPOTIFY</button>
+      </div>
+      
+      <div class="input-box" style="margin-bottom:14px">
+        <i class="fa-solid fa-search"></i>
+        <input id="spotify-search-input" placeholder="Cari lagu di Spotify..." onkeydown="if(event.key==='Enter')searchSpotify()">
+        <button onclick="searchSpotify()" style="background:none;border:none;color:var(--hoshino-pink);padding:0 5px"><i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+      
+      <div id="spotify-results" class="search-list"></div>
+    </div>
+  </div>
+</div>
 
 <!-- SUBPAGE: GEMPA BMKG -->
 <div id="sub-gempa" class="subpage">
@@ -666,7 +711,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     </div>
 
     <div class="about-block">
-      <div class="about-header"><i class="fa-solid fa-cubes" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">MODUL UTAMA (15 MODUL)</h3></div>
+      <div class="about-header"><i class="fa-solid fa-cubes" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">MODUL UTAMA (16 MODUL)</h3></div>
       <div class="about-features">
         <div class="about-feat"><i class="fa-solid fa-tower-broadcast"></i><div><strong>Manage Sender</strong><span>Kelola nomor sender lokal</span></div></div>
         <div class="about-feat"><i class="fa-solid fa-book-quran"></i><div><strong>Al-Qur'an</strong><span>114 surah lengkap Arab-Latin-Arti</span></div></div>
@@ -683,6 +728,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
         <div class="about-feat"><i class="fa-solid fa-house-chimney-crack"></i><div><strong>Gempa BMKG</strong><span>Info gempa terkini</span></div></div>
         <div class="about-feat"><i class="fa-solid fa-qrcode"></i><div><strong>QR Generator</strong><span>Buat QR Code</span></div></div>
         <div class="about-feat"><i class="fa-solid fa-cloud-sun"></i><div><strong>Cuaca</strong><span>Cek cuaca real-time</span></div></div>
+        <div class="about-feat"><i class="fa-brands fa-spotify"></i><div><strong>Putar Musik</strong><span>Spotify API Integration</span></div></div>
       </div>
     </div>
 
@@ -697,10 +743,11 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
         <span class="about-tag" style="border-color:#FFB6D9;color:#FFB6D9">MangaDex API</span>
         <span class="about-tag" style="border-color:#f87171;color:#f87171">BMKG API</span>
         <span class="about-tag" style="border-color:#a78bfa;color:#a78bfa">Open-Meteo API</span>
+        <span class="about-tag" style="border-color:#1DB954;color:#1DB954">Spotify Web API</span>
         <span class="about-tag" style="border-color:#FFE5A0;color:#FFE5A0">LocalStorage</span>
         <span class="about-tag" style="border-color:#a99cc4;color:#a99cc4">Font Awesome</span>
       </div>
-      <p class="about-text" style="margin-top:12px"><strong>Zero framework</strong> — 100% Vanilla JS tanpa build step. Ringan, cepat, mudah di-host di mana saja (GitHub Pages, Vercel, Netlify, bahkan offline via ZArchiver).</p>
+      <p class="about-text" style="margin-top:12px"><strong>Zero framework</strong> — 100% Vanilla JS tanpa build step. Ringan, cepat, mudah di-host di mana saja (GitHub Pages, Vercel, Netlify).</p>
     </div>
 
     <div class="about-block">
@@ -722,7 +769,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
         <li>✅ Tidak ada tracking, tidak ada analytics</li>
         <li>✅ Tidak ada database server</li>
         <li>✅ Auth demo lokal (bukan produksi)</li>
-        <li>✅ API call hanya untuk data publik (berita, jadwal sholat, Qur'an, MangaDex, BMKG, Cuaca)</li>
+        <li>✅ API call hanya untuk data publik (berita, jadwal sholat, Qur'an, MangaDex, BMKG, Cuaca, Spotify)</li>
         <li>⚠️ Jangan pakai password asli — ini demo</li>
       </ul>
     </div>
@@ -730,7 +777,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div class="about-block">
       <div class="about-header"><i class="fa-solid fa-road" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">ROADMAP</h3></div>
       <div class="about-timeline">
-        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca</div></div>
+        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--hoshino-pink)"></span><div><strong>V5.0 (Next)</strong> — Firebase real-time chat, payment gateway, PWA install</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--muted)"></span><div><strong>V6.0 (Future)</strong> — Multi-language, AI assistant, cloud sync</div></div>
       </div>
@@ -752,7 +799,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
         <li>Blue Archive / Yostar / Nexon</li>
         <li>One Piece / Eiichiro Oda / Toei Animation</li>
         <li>WhatsApp / Meta</li>
-        <li>MangaDex / BMKG / Open-Meteo</li>
+        <li>MangaDex / BMKG / Open-Meteo / Spotify</li>
       </ul>
       <p class="about-text" style="margin-top:10px">Semua karakter dan merek dagang adalah milik pemegang haknya masing-masing. Digunakan untuk keperluan edukasi dan fan project.</p>
     </div>
@@ -778,8 +825,9 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 
 <div id="modal-buy-role" class="modal-overlay"><div class="modal-card"><h3 class="font-cyber" id="buy-title" style="margin-bottom:8px">BELI ROLE</h3><p id="buy-desc" style="font-size:11px;color:#aaa;margin-bottom:12px"></p><label style="font-size:10px;color:#aaa">USERNAME KONTAK</label><input class="field" id="buyer-contact" placeholder="Username / email kontak"><label style="font-size:10px;color:#aaa">CATATAN (OPSIONAL)</label><input class="field" id="buyer-note" placeholder="Catatan pesanan"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn-secondary" onclick="closeModal('modal-buy-role')">BATAL</button><button class="btn-primary" style="margin:0" onclick="submitRoleOrder()">KIRIM PESANAN</button></div></div></div>
 
-<div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div><aside id="sidebar-drawer" class="drawer"><div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px"><strong class="font-cyber">XION CORE</strong><button class="icon-btn" onclick="toggleDrawer(false)">×</button></div><p style="font-size:9px;color:#888;margin-bottom:10px">NAVIGATION MENU</p><div class="drawer-item" onclick="drawerGo('home')"><i class="fa-solid fa-house"></i> Home</div><div class="drawer-item" onclick="drawerGo('console')"><i class="fa-solid fa-terminal"></i> Console</div><div class="drawer-item" onclick="drawerGo('anime')"><i class="fa-solid fa-film"></i> Anime</div><div class="drawer-item" onclick="drawerGo('tools')"><i class="fa-solid fa-toolbox"></i> Tools</div><div class="drawer-item" onclick="drawerGo('chat')"><i class="fa-solid fa-comments"></i> Global Chat</div><div class="drawer-item" onclick="openSubpage('sub-asma');toggleDrawer(false)"><i class="fa-solid fa-moon"></i> Asmaul Husna</div><div class="drawer-item" onclick="openSubpage('sub-manga');toggleDrawer(false)"><i class="fa-solid fa-book-open"></i> Baca Manga</div><div class="drawer-item" onclick="openSubpage('sub-gempa');toggleDrawer(false)"><i class="fa-solid fa-house-chimney-crack"></i> Gempa BMKG</div><div class="drawer-item" onclick="openSubpage('sub-qr');toggleDrawer(false)"><i class="fa-solid fa-qrcode"></i> QR Generator</div><div class="drawer-item" onclick="openSubpage('sub-cuaca');toggleDrawer(false)"><i class="fa-solid fa-cloud-sun"></i> Cuaca</div><div class="drawer-item" onclick="openSubpage('sub-roles');toggleDrawer(false)"><i class="fa-solid fa-crown"></i> Buy Role</div><div class="drawer-item" onclick="openSubpage('sub-about');toggleDrawer(false)"><i class="fa-solid fa-circle-info"></i> Tentang XION</div><div class="drawer-item" onclick="drawerGo('profile')"><i class="fa-regular fa-user"></i> Info Akun</div><div class="drawer-item" onclick="logoutApp()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</div></div><span class="font-mono" style="font-size:9px;color:#888">XION PROJECT × HOSHINO</span></aside>
+<div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div><aside id="sidebar-drawer" class="drawer"><div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px"><strong class="font-cyber">XION CORE</strong><button class="icon-btn" onclick="toggleDrawer(false)">×</button></div><p style="font-size:9px;color:#888;margin-bottom:10px">NAVIGATION MENU</p><div class="drawer-item" onclick="drawerGo('home')"><i class="fa-solid fa-house"></i> Home</div><div class="drawer-item" onclick="drawerGo('console')"><i class="fa-solid fa-terminal"></i> Console</div><div class="drawer-item" onclick="drawerGo('anime')"><i class="fa-solid fa-film"></i> Anime</div><div class="drawer-item" onclick="drawerGo('tools')"><i class="fa-solid fa-toolbox"></i> Tools</div><div class="drawer-item" onclick="drawerGo('chat')"><i class="fa-solid fa-comments"></i> Global Chat</div><div class="drawer-item" onclick="openSubpage('sub-asma');toggleDrawer(false)"><i class="fa-solid fa-moon"></i> Asmaul Husna</div><div class="drawer-item" onclick="openSubpage('sub-manga');toggleDrawer(false)"><i class="fa-solid fa-book-open"></i> Baca Manga</div><div class="drawer-item" onclick="openSubpage('sub-music');toggleDrawer(false)"><i class="fa-brands fa-spotify"></i> Putar Musik</div><div class="drawer-item" onclick="openSubpage('sub-gempa');toggleDrawer(false)"><i class="fa-solid fa-house-chimney-crack"></i> Gempa BMKG</div><div class="drawer-item" onclick="openSubpage('sub-qr');toggleDrawer(false)"><i class="fa-solid fa-qrcode"></i> QR Generator</div><div class="drawer-item" onclick="openSubpage('sub-cuaca');toggleDrawer(false)"><i class="fa-solid fa-cloud-sun"></i> Cuaca</div><div class="drawer-item" onclick="openSubpage('sub-roles');toggleDrawer(false)"><i class="fa-solid fa-crown"></i> Buy Role</div><div class="drawer-item" onclick="openSubpage('sub-about');toggleDrawer(false)"><i class="fa-solid fa-circle-info"></i> Tentang XION</div><div class="drawer-item" onclick="drawerGo('profile')"><i class="fa-regular fa-user"></i> Info Akun</div><div class="drawer-item" onclick="logoutApp()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</div></div><span class="font-mono" style="font-size:9px;color:#888">XION PROJECT × HOSHINO</span></aside>
 
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
 'use strict';
 const CONFIG={username:'xion_dev',password:'123456',newsUrl:'https://news.google.com/rss?hl=id&gl=ID&ceid=ID:id',quranApi:'https://equran.id/api/v2',prayerCity:'Yogyakarta',prayerCountry:'Indonesia'};
@@ -910,290 +958,226 @@ function getRoleOrders(){try{const a=JSON.parse(localStorage.getItem('xion_role_
 function submitRoleOrder(){const contact=$('buyer-contact').value.trim();if(!contact){alert('Isi kontak terlebih dahulu.');return}const p=ROLE_PRODUCTS.find(x=>x.role===selectedBuyRole);if(!p){alert('Role tidak ditemukan.');return}const orders=getRoleOrders();orders.unshift({id:'XION-'+Date.now(),username:currentUser,role:p.role,price:p.price,contact:contact,note:$('buyer-note').value.trim(),status:'PENDING',created:new Date().toLocaleString('id-ID')});localStorage.setItem('xion_role_orders',JSON.stringify(orders));closeModal('modal-buy-role');$('buyer-note').value='';renderRoleHistory();alert('Pesanan berhasil dicatat di perangkat ini. Status: PENDING. Ini belum merupakan pembayaran atau aktivasi role.')}
 function renderRoleHistory(){const c=$('role-history');if(!c)return;const a=getRoleOrders().filter(x=>x.username===currentUser);c.innerHTML='';if(!a.length){c.innerHTML='<p style="font-size:10px;color:#888">Belum ada pesanan.</p>';return}a.forEach(o=>{const d=document.createElement('div');d.className='history-row';const b=document.createElement('b');b.textContent=o.role+' • '+formatRupiah(o.price);const p=document.createElement('p');p.style.cssText='color:#999;margin-top:6px';p.textContent=o.id+' • '+o.created+' • '+o.contact;const s=document.createElement('p');s.className='status-pending';s.style.marginTop='7px';s.textContent='● '+o.status;d.append(b,p,s);c.appendChild(d)})}
 
-// ==================== NEW TOOLS LOGIC ====================
+// ==================== SPOTIFY API LOGIC (PKCE FLOW) ====================
+const CLIENT_ID = 'e0b5648d4fa24d71bb84ced025a90868';
+const REDIRECT_URI = window.location.origin + '/'; // HARUS SAMA DENGAN DI SPOTIFY DASHBOARD
+const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
+const TOKEN_ENDPOINT = 'https://accounts.spotify.com/api/token';
+const SCOPES = 'user-read-playback-state user-modify-playback-state streaming user-read-email user-read-private';
+let accessToken = localStorage.getItem('spotify_access_token') || null;
+let refreshToken = localStorage.getItem('spotify_refresh_token') || null;
+let player = null;
+let deviceId = null;
 
-// 1. GEMPA BMKG (FIXED CORS PROXY)
-async function loadGempa() {
-  const c = $('gempa-container');
-  c.innerHTML = '<p style="color:var(--muted);font-size:11px">Memuat data gempa...</p>';
-  try {
-    const targetUrl = 'https://data.bmkg.go.id/DataMKG/TEWS/autogempa.json';
-    // Menggunakan allorigins untuk bypass CORS di ZArchiver
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
-    
-    const res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    
-    const json = await res.json();
-    
-    if (!json.Infogempa || !json.Infogempa.gempa) {
-      throw new Error('Format data BMKG tidak valid');
-    }
-    
-    const g = json.Infogempa.gempa;
-    
-    c.innerHTML = `
-      <div class="bmkg-card">
-        <h3 class="font-cyber">M ${g.Magnitude}</h3>
-        <p><strong>Kedalaman:</strong> ${g.Kedalaman}</p>
-        <p><strong>Wilayah:</strong> ${g.Wilayah}</p>
-        <p><strong>Waktu:</strong> ${g.Tanggal}, ${g.Jam}</p>
-        <p><strong>Koordinat:</strong> ${g.Lintang}, ${g.Bujur}</p>
-        <p><strong>Potensi:</strong> ${g.Potensi}</p>
-        <p style="margin-top:10px;font-size:10px;color:var(--muted)">Dirasakan di: ${g.Dirasakan}</p>
-      </div>
-      <p style="font-size:10px;color:var(--muted);margin-top:10px">Sumber: BMKG Indonesia</p>
-    `;
-  } catch (e) {
-    console.error('Gempa error:', e);
-    c.innerHTML = `<p style="color:#ef7777;font-size:11px">Gagal memuat data gempa.<br>${e.message}</p>
-    <button class="btn-secondary" style="margin-top:10px" onclick="loadGempa()">COBA LAGI</button>`;
+// PKCE Helper
+function generateRandomString(length) {
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
+  return text;
+}
+async function generateCodeChallenge(codeVerifier) {
+  const data = new TextEncoder().encode(codeVerifier);
+  const digest = await window.crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode.apply(null, new Uint8Array(digest)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function redirectToSpotifyAuthorize() {
+  const codeVerifier = generateRandomString(64);
+  localStorage.setItem('spotify_code_verifier', codeVerifier);
+  
+  generateCodeChallenge(codeVerifier).then(codeChallenge => {
+    const params = new URLSearchParams({
+      client_id: CLIENT_ID,
+      response_type: 'code',
+      redirect_uri: REDIRECT_URI,
+      code_challenge_method: 'S256',
+      code_challenge: codeChallenge,
+      scope: SCOPES
+    });
+    window.location.href = `${AUTH_ENDPOINT}?${params.toString()}`;
+  });
+}
+
+async function getToken(code) {
+  const codeVerifier = localStorage.getItem('spotify_code_verifier');
+  const response = await fetch(TOKEN_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: CLIENT_ID,
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: REDIRECT_URI,
+      code_verifier: codeVerifier
+    })
+  });
+  return await response.json();
+}
+
+// Check URL for code
+async function handleSpotifyCallback() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  if (code) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    try {
+      const data = await getToken(code);
+      accessToken = data.access_token;
+      refreshToken = data.refresh_token;
+      localStorage.setItem('spotify_access_token', accessToken);
+      localStorage.setItem('spotify_refresh_token', refreshToken);
+      initSpotifyPlayer(); // Initialize player after getting token
+    } catch(e) { console.error('Spotify Token Error', e); }
   }
 }
 
-// 2. QR GENERATOR
-function generateQR() {
-  const text = $('qr-input').value.trim();
-  if (!text) { alert('Masukkan teks atau URL terlebih dahulu!'); return; }
-  
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(text)}`;
-  
-  $('qr-image').src = qrUrl;
-  $('qr-download').href = qrUrl;
-  $('qr-result').style.display = 'block';
+function logoutSpotify() {
+  accessToken = null; refreshToken = null;
+  localStorage.removeItem('spotify_access_token');
+  localStorage.removeItem('spotify_refresh_token');
+  if(player) player.disconnect();
+  checkSpotifyState();
 }
 
-// 3. CUACA
-async function searchCuaca() {
-  const city = $('cuaca-input').value.trim();
-  if (!city) { alert('Masukkan nama kota!'); return; }
-  
-  const c = $('cuaca-container');
-  c.innerHTML = '<p style="color:var(--muted);font-size:11px">Mencari lokasi...</p>';
-  
-  try {
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=id&format=json`);
-    const geoData = await geoRes.json();
-    
-    if (!geoData.results || geoData.results.length === 0) {
-      throw new Error('Kota tidak ditemukan');
-    }
-    
-    const loc = geoData.results[0];
-    const lat = loc.latitude;
-    const lon = loc.longitude;
-    
-    c.innerHTML = '<p style="color:var(--muted);font-size:11px">Mengambil data cuaca...</p>';
-    
-    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`);
-    const wData = await weatherRes.json();
-    
-    const current = wData.current;
-    const temp = current.temperature_2m;
-    const hum = current.relative_humidity_2m;
-    const wind = current.wind_speed_10m;
-    const code = current.weather_code;
-    
-    const weatherMap = {
-      0: 'Cerah ☀️', 1: 'Cerah Berawan 🌤️', 2: 'Berawan ⛅', 3: 'Mendung ☁️',
-      45: 'Berkabut 🌫️', 48: 'Kabut Tebal 🌫️', 51: 'Gerimis Ringan 🌦️',
-      53: 'Gerimis 🌧️', 55: 'Gerimis Lebat 🌧️', 61: 'Hujan Ringan 🌧️',
-      63: 'Hujan 🌧️', 65: 'Hujan Lebat 🌧️', 71: 'Salju ❄️', 80: 'Hujan Lokal 🌦️',
-      95: 'Badai Petir ⛈️'
-    };
-    const weatherDesc = weatherMap[code] || 'Tidak Diketahui';
-    
-    c.innerHTML = `
-      <div class="bmkg-card" style="text-align:left">
-        <h3 class="font-cyber" style="font-size:16px">${loc.name}, ${loc.country}</h3>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
-          <div>
-            <p style="font-size:28px;font-weight:800;color:var(--hoshino-pink)">${temp}°C</p>
-            <p style="font-size:12px;color:var(--hoshino-yellow)">${weatherDesc}</p>
-          </div>
-          <div style="text-align:right;font-size:11px;color:var(--muted)">
-            <p>💧 ${hum}%</p>
-            <p>💨 ${wind} km/j</p>
-          </div>
-        </div>
-      </div>
-      <p style="font-size:10px;color:var(--muted);margin-top:10px">Sumber: Open-Meteo</p>
-    `;
-  } catch (e) {
-    c.innerHTML = `<p style="color:#ef7777;font-size:11px">Gagal memuat cuaca.<br>${e.message}</p>`;
+// UI State
+function checkSpotifyState() {
+  if (accessToken) {
+    $('spotify-login-section').style.display = 'none';
+    $('spotify-player-section').style.display = 'block';
+    fetchSpotifyUser();
+  } else {
+    $('spotify-login-section').style.display = 'block';
+    $('spotify-player-section').style.display = 'none';
   }
 }
 
-// ==================== MANGA READER LOGIC ====================
-const MANGA_PROXY = ""; 
-const MANGA_API = "https://api.mangadex.org";
-const MANGA_CDN = "https://uploads.mangadex.org";
-
-function getMangaApiUrl(path) {
-  return MANGA_PROXY ? MANGA_PROXY + '/api' + path : MANGA_API + path;
-}
-function getMangaImageUrl(path) {
-  return MANGA_PROXY ? MANGA_PROXY + path : MANGA_CDN + path;
-}
-
-async function searchManga() {
-  const q = $('manga-search-input').value.trim();
-  if (!q) return;
-  const list = $('manga-list');
-  list.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;grid-column:1/-1;padding:20px">Mencari manga...</p>';
-  
+async function fetchSpotifyUser() {
   try {
-    const res = await fetch(getMangaApiUrl(`/manga?title=${encodeURIComponent(q)}&limit=20&includes[]=cover_art&contentRating[]=safe&contentRating[]=suggestive`));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch('https://api.spotify.com/v1/me', {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    if(res.status === 401) { logoutSpotify(); return; }
     const data = await res.json();
-    list.innerHTML = '';
+    $('spotify-user-name').textContent = data.display_name || data.id;
+  } catch(e) { console.error(e); }
+}
+
+// Search
+async function searchSpotify() {
+  const q = $('spotify-search-input').value.trim();
+  if(!q) return;
+  const c = $('spotify-results');
+  c.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;">Mencari lagu...</p>';
+  
+  try {
+    const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=10`, {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    if(res.status === 401) { logoutSpotify(); return; }
+    const data = await res.json();
     
-    if (!data.data || data.data.length === 0) {
-      list.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;grid-column:1/-1;padding:20px">Manga tidak ditemukan.</p>';
+    c.innerHTML = '';
+    if(!data.tracks || !data.tracks.items.length) {
+      c.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;">Lagu tidak ditemukan.</p>';
       return;
     }
     
-    data.data.forEach(manga => {
-      const title = manga.attributes.title.en || manga.attributes.title.id || Object.values(manga.attributes.title)[0] || 'Unknown';
-      const coverRel = manga.relationships.find(r => r.type === 'cover_art');
-      let coverUrl = 'https://via.placeholder.com/200x300/1e1533/a99cc4?text=No+Cover';
-      if (coverRel && coverRel.attributes) {
-        coverUrl = getMangaImageUrl(`/covers/${manga.id}/${coverRel.attributes.fileName}.256.jpg`);
-      }
-      
-      const card = document.createElement('div');
-      card.className = 'manga-card';
-      card.innerHTML = `
-        <img src="${coverUrl}" alt="${title}" onerror="this.src='https://via.placeholder.com/200x300/1e1533/a99cc4?text=Error'">
+    data.tracks.items.forEach(track => {
+      const img = track.album.images[2]?.url || track.album.images[0]?.url || '';
+      const artist = track.artists.map(a=>a.name).join(', ');
+      const div = document.createElement('div');
+      div.className = 'music-item';
+      div.innerHTML = `
+        <img src="${img}" alt="cover">
         <div>
-          <h4>${title}</h4>
-          <span>${(manga.attributes.status || 'Unknown').toUpperCase()}</span>
+          <h4>${track.name}</h4>
+          <p>${artist}</p>
         </div>
+        <button onclick="playSpotifyTrack('${track.uri}')"><i class="fa-solid fa-play"></i></button>
       `;
-      card.onclick = () => loadMangaChapters(manga.id, title);
-      list.appendChild(card);
+      c.appendChild(div);
     });
-  } catch (e) {
-    list.innerHTML = `<p style="text-align:center;color:#ef7777;font-size:11px;grid-column:1/-1;padding:20px">Gagal mencari manga: ${e.message}</p>`;
+  } catch(e) {
+    c.innerHTML = `<p style="text-align:center;color:#ef7777;font-size:11px;">Gagal mencari lagu. Error: ${e.message}</p>`;
   }
 }
 
-async function loadMangaChapters(mangaId, title) {
-  $('manga-search-view').style.display = 'none';
-  $('manga-chapters-view').style.display = 'block';
-  $('manga-reader-view').style.display = 'none';
-  
-  $('manga-detail-info').innerHTML = `<span class="hero-tag font-mono">MANGA DETAILS</span><h2 class="font-cyber" style="font-size:18px">${title}</h2><p>Memuat daftar chapter...</p>`;
-  const list = $('chapter-list');
-  list.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:20px">Memuat chapter...</p>';
+// Spotify Web Playback SDK Logic
+window.onSpotifyWebPlaybackSDKReady = () => {
+  if(!accessToken) return;
+  initSpotifyPlayer();
+};
+
+function initSpotifyPlayer() {
+  if (player) return; // Prevent double init
+
+  player = new Spotify.Player({
+    name: 'XION PROJECT Web Player',
+    getOAuthToken: cb => { cb(accessToken); },
+    volume: 0.5
+  });
+
+  player.addListener('ready', ({ device_id }) => {
+    console.log('Ready with Device ID', device_id);
+    deviceId = device_id;
+  });
+
+  player.addListener('not_ready', ({ device_id }) => {
+    console.log('Device ID has gone offline', device_id);
+  });
+
+  player.addListener('initialization_error', ({ message }) => {
+    alert('Gagal inisialisasi Spotify (Pastikan akun Premium): ' + message);
+  });
+
+  player.addListener('authentication_error', ({ message }) => {
+    alert('Sesi Spotify habis, silakan login ulang.');
+    logoutSpotify();
+  });
+
+  player.addListener('account_error', ({ message }) => {
+    alert('Akun Spotify kamu harus Premium untuk memutar lagu di web!');
+  });
+
+  player.connect();
+}
+
+async function playSpotifyTrack(trackUri) {
+  if(!deviceId) {
+    alert('Player belum siap. Tunggu beberapa detik atau pastikan akun Premium.');
+    return;
+  }
   
   try {
-    const res = await fetch(getMangaApiUrl(`/manga/${mangaId}/feed?translatedLanguage[]=en&translatedLanguage[]=id&order[chapter]=asc&limit=500`));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    list.innerHTML = '';
-    
-    if (!data.data || data.data.length === 0) {
-      list.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:20px">Tidak ada chapter tersedia (ID/EN).</p>';
-      return;
-    }
-    
-    const chapters = {};
-    data.data.forEach(ch => {
-      const chNum = ch.attributes.chapter || '?';
-      if (!chapters[chNum] || ch.attributes.translatedLanguage === 'id') {
-        chapters[chNum] = ch;
+    const res = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ uris: [trackUri] }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + accessToken
       }
     });
     
-    const sortedChapters = Object.values(chapters).sort((a, b) => {
-      const numA = parseFloat(a.attributes.chapter) || 0;
-      const numB = parseFloat(b.attributes.chapter) || 0;
-      return numA - numB;
-    });
-    
-    $('manga-detail-info').innerHTML = `<span class="hero-tag font-mono">MANGA DETAILS</span><h2 class="font-cyber" style="font-size:18px">${title}</h2><p>${sortedChapters.length} Chapter ditemukan</p>`;
-    
-    sortedChapters.forEach(ch => {
-      const chTitle = `Chapter ${ch.attributes.chapter || '?'} ${ch.attributes.title ? '- ' + ch.attributes.title : ''}`;
-      const row = document.createElement('div');
-      row.className = 'action-card';
-      row.style.cssText = 'cursor:pointer;padding:12px;display:flex;justify-content:space-between;align-items:center';
-      row.innerHTML = `<h4 style="font-size:11px;margin-bottom:0">${chTitle}</h4><span class="pill-badge" style="font-size:8px">${ch.attributes.translatedLanguage.toUpperCase()}</span>`;
-      row.onclick = () => loadMangaPages(ch.id, chTitle);
-      list.appendChild(row);
-    });
-  } catch (e) {
-    list.innerHTML = `<p style="text-align:center;color:#ef7777;font-size:11px;padding:20px">Gagal memuat chapter: ${e.message}</p>`;
+    if(res.status === 403) {
+      alert('Gagal memutar. Pastikan akun Spotify kamu Premium.');
+    } else if (res.status === 404) {
+      alert('Device tidak ditemukan. Coba refresh halaman.');
+    }
+  } catch(e) {
+    console.error(e);
   }
 }
 
-async function loadMangaPages(chapterId, chTitle) {
-  $('manga-chapters-view').style.display = 'none';
-  $('manga-reader-view').style.display = 'block';
-  $('reader-chapter-title').textContent = chTitle;
-  
-  const container = $('manga-pages');
-  container.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:20px">Memuat halaman...</p>';
-  window.scrollTo(0, 0);
-  
-  try {
-    const res = await fetch(getMangaApiUrl(`/at-home/server/${chapterId}`));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    
-    if (!data.baseUrl || !data.chapter) throw new Error("Data chapter tidak valid");
-    
-    const baseUrl = data.baseUrl;
-    const hash = data.chapter.hash;
-    const pages = data.chapter.data; 
-    
-    container.innerHTML = '';
-    
-    pages.forEach((filename, index) => {
-      const imgUrl = MANGA_PROXY 
-        ? `${MANGA_PROXY}/data/${hash}/${filename}` 
-        : `${baseUrl}/data/${hash}/${filename}`;
-        
-      const img = document.createElement('img');
-      img.className = 'manga-reader-img';
-      img.src = imgUrl;
-      img.loading = 'lazy';
-      img.alt = `Page ${index + 1}`;
-      
-      img.onerror = () => {
-        if (MANGA_PROXY && img.src.includes(MANGA_PROXY)) {
-          img.src = `${baseUrl}/data/${hash}/${filename}`;
-        } else {
-          img.alt = `Gagal memuat halaman ${index + 1}`;
-          img.style.height = '100px';
-          img.style.objectFit = 'contain';
-          img.src = 'https://via.placeholder.com/400x100/0d0819/ef7777?text=Gagal+Memuat+Gambar';
-        }
-      };
-      
-      container.appendChild(img);
-    });
-  } catch (e) {
-    container.innerHTML = `<p style="text-align:center;color:#ef7777;font-size:11px;padding:20px">Gagal memuat halaman: ${e.message}</p>`;
-  }
-}
+// Initialize Spotify Check on load
+window.addEventListener('load', async () => {
+  await handleSpotifyCallback();
+  checkSpotifyState();
+});
 
-function backToMangaSearch() {
-  $('manga-chapters-view').style.display = 'none';
-  $('manga-reader-view').style.display = 'none';
-  $('manga-search-view').style.display = 'block';
-  $('manga-search-input').value = '';
-  $('manga-list').innerHTML = '';
-}
-
-function backToChapters() {
-  $('manga-reader-view').style.display = 'none';
-  $('manga-chapters-view').style.display = 'block';
-  window.scrollTo(0, 0);
-}
-
+// Initial loads
 renderSenders();updateXionProfile();renderChatMessages();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-</html>
+  </html>
