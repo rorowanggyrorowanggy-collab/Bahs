@@ -13,6 +13,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp, where, Timestamp, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAC61tBtehNF3NKvv4Rq4bcNnD5hp56_jo",
@@ -26,8 +27,11 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
 
+  // Expose to global window
   window.db = db;
+  window.auth = auth;
   window.collection = collection;
   window.addDoc = addDoc;
   window.query = query;
@@ -40,6 +44,10 @@
   window.onSnapshot = onSnapshot;
   window.doc = doc;
   window.deleteDoc = deleteDoc;
+  window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+  window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+  window.onAuthStateChanged = onAuthStateChanged;
+  window.signOut = signOut;
 </script>
 <!-- FIREBASE SDK END -->
 
@@ -511,7 +519,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 <div class="app-body">
   <div id="tab-home" class="view-section active">
     
-    <!-- PERINGKAT DONASI (PINDAH KE ATAS) -->
+    <!-- PERINGKAT DONASI -->
     <div class="sec-head" style="margin-top: 0;"><h3><i class="fa-solid fa-trophy" style="color:var(--hoshino-yellow)"></i> TOP DONATUR</h3><span>FIREBASE</span></div>
     <div class="grid-2" style="grid-template-columns: 1fr; margin-bottom: 15px;">
       <div class="action-card" style="padding:12px;">
@@ -694,10 +702,10 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
   <div class="modal-card">
     <h3 class="font-cyber" style="margin-bottom:15px">DAFTAR AKUN BARU</h3>
     <div class="input-group"><label>USERNAME</label><div class="input-box"><i class="fa-regular fa-user"></i><input id="reg-user" placeholder="Username baru"></div></div>
-    <div class="input-group"><label>PASSWORD</label><div class="input-box"><i class="fa-solid fa-lock"></i><input id="reg-pass" type="password" placeholder="Password"></div></div>
+    <div class="input-group"><label>PASSWORD</label><div class="input-box"><i class="fa-solid fa-lock"></i><input id="reg-pass" type="password" placeholder="Password (min. 6 karakter)"></div></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px">
       <button class="btn-secondary" onclick="closeModal('modal-register')">BATAL</button>
-      <button class="btn-primary" style="margin:0" onclick="handleRegister()">DAFTAR</button>
+      <button class="btn-primary" style="margin:0" onclick="handleRegister(event)">DAFTAR</button>
     </div>
   </div>
 </div>
@@ -1041,7 +1049,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div class="about-block">
       <div class="about-header"><i class="fa-solid fa-road" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">ROADMAP</h3></div>
       <div class="about-timeline">
-        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player, Google Login, WA Story, Firebase Donasi & Chat, Kalkulator, Fancy Text</div></div>
+        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player, Google Login, WA Story, Firebase Donasi & Chat, Firebase Auth, Kalkulator, Fancy Text</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--hoshino-pink)"></span><div><strong>V5.0 (Next)</strong> — Firebase real-time chat, payment gateway, PWA install</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--muted)"></span><div><strong>V6.0 (Future)</strong> — Multi-language, AI assistant, cloud sync</div></div>
       </div>
@@ -1095,11 +1103,10 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 <script>
 'use strict';
 const CONFIG={username:'xion_dev',password:'123456',newsUrl:'https://news.google.com/rss?hl=id&gl=ID&ceid=ID:id',quranApi:'https://equran.id/api/v2',prayerCity:'Yogyakarta',prayerCountry:'Indonesia'};
-let currentUser=CONFIG.username,currentRole='OWNER',introStep=0,selectedModule='DELAY HARD',selectedNode='pribadi',senders=loadSavedSenders(),allSurahs=[],splashTimer=null,splashPhaseTimer=null,selectedBuyRole=null,asmaIndex=0;
+let currentUser='GUEST',currentRole='MEMBER',introStep=0,selectedModule='DELAY HARD',selectedNode='pribadi',senders=loadSavedSenders(),allSurahs=[],splashTimer=null,splashPhaseTimer=null,selectedBuyRole=null,asmaIndex=0;
 let chatUnsubscribe = null;
 const $=id=>document.getElementById(id);
 const XION_ROLES={OWNER:{label:'OWNER',className:'role-owner',verified:true},DEVELOPER:{label:'DEVELOPER',className:'role-developer',verified:true},ADMIN:{label:'ADMIN',className:'role-admin',verified:false},MODERATOR:{label:'MODERATOR',className:'role-moderator',verified:false},PREMIUM:{label:'PREMIUM',className:'role-premium',verified:false},MEMBER:{label:'MEMBER',className:'role-member',verified:false}};
-const XION_ACCOUNTS={xion_dev:{password:'123456',role:'OWNER'},xion_developer:{password:'dev123',role:'DEVELOPER'},xion_admin:{password:'admin123',role:'ADMIN'},xion_mod:{password:'mod123',role:'MODERATOR'},xion_premium:{password:'premium123',role:'PREMIUM'},xion_member:{password:'member123',role:'MEMBER'}};
 const ROLE_PRODUCTS=[
  {role:'PREMIUM',price:15000,desc:'Akses fitur premium dan label membership.'},
  {role:'MODERATOR',price:35000,desc:'Role komunitas dengan fasilitas moderasi setelah disetujui Owner.'},
@@ -1118,7 +1125,98 @@ setInterval(updateClocks,1000);
 document.addEventListener('DOMContentLoaded',updateClocks);
 updateClocks();
 
-// ==================== GOOGLE LOGIN LOGIC ====================
+// ==================== FIREBASE AUTH STATE LISTENER ====================
+window.onAuthStateChanged(window.auth, (user) => {
+  if (user) {
+    const email = user.email;
+    currentUser = email.split('@')[0]; // Ambil username sebelum @xion.app
+    
+    // Tentukan Role berdasarkan username
+    if (currentUser === 'xion_dev') currentRole = 'OWNER';
+    else if (currentUser === 'xion_developer') currentRole = 'DEVELOPER';
+    else if (currentUser === 'xion_admin') currentRole = 'ADMIN';
+    else if (currentUser === 'xion_mod') currentRole = 'MODERATOR';
+    else if (currentUser === 'xion_premium') currentRole = 'PREMIUM';
+    else currentRole = 'MEMBER';
+
+    updateXionProfile();
+    
+    // Jika sedang di halaman login, pindah ke splash
+    if ($('screen-login').classList.contains('active')) {
+      showScreen('screen-splash');
+      startSplash();
+    }
+  } else {
+    currentUser = 'GUEST';
+    currentRole = 'MEMBER';
+    showScreen('screen-login');
+  }
+});
+
+async function handleLogin() {
+  const u = $('login-user').value.trim();
+  const p = $('login-pass').value;
+  
+  if (!u || !p) { alert('Username dan Password wajib diisi!'); return; }
+
+  try {
+    $('btn-login').textContent = 'AUTHENTICATING...';
+    $('btn-login').disabled = true;
+    // Firebase Auth menggunakan format email. Kita gunakan virtual email @xion.app
+    await window.signInWithEmailAndPassword(window.auth, u + '@xion.app', p);
+    // Jika sukses, onAuthStateChanged akan otomatis menangani transisi layar
+  } catch (error) {
+    console.error(error);
+    let msg = 'Akses ditolak. ';
+    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      msg += 'Username atau password salah, atau belum terdaftar.';
+    } else {
+      msg += error.message;
+    }
+    $('bot-msg').textContent = msg;
+    $('login-pass').value = '';
+  } finally {
+    $('btn-login').textContent = 'SIGN IN';
+    $('btn-login').disabled = false;
+  }
+}
+
+async function handleRegister(event) {
+  const u = $('reg-user').value.trim();
+  const p = $('reg-pass').value;
+  
+  if (!u || !p) { alert('Username dan Password wajib diisi!'); return; }
+  if (p.length < 6) { alert('Password minimal 6 karakter demi keamanan!'); return; }
+
+  try {
+    const btn = event.target;
+    btn.textContent = 'LOADING...';
+    btn.disabled = true;
+
+    await window.createUserWithEmailAndPassword(window.auth, u + '@xion.app', p);
+    
+    alert('Registrasi Berhasil! Selamat datang di XION Project.');
+    closeModal('modal-register');
+    $('reg-user').value = '';
+    $('reg-pass').value = '';
+    // onAuthStateChanged akan otomatis login
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'auth/email-already-in-use') {
+      alert('Username sudah dipakai, cari yang lain.');
+    } else {
+      alert('Gagal registrasi: ' + error.message);
+    }
+  } finally {
+    const btn = event.target;
+    if (btn) {
+      btn.textContent = 'DAFTAR';
+      btn.disabled = false;
+    }
+  }
+}
+
+// ==================== GOOGLE LOGIN LOGIC (NON-FIREBASE) ====================
 function parseJwt(token) {
   var base64Url = token.split('.')[1];
   var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -1158,39 +1256,6 @@ window.onload = function () {
     );
   }
 };
-// ============================================================
-
-// ==================== REGISTRASI LOGIC ====================
-function getCustomAccounts() {
-  try {
-    const data = localStorage.getItem('xion_custom_accounts');
-    return data ? JSON.parse(data) : {};
-  } catch(e) { return {}; }
-}
-
-function handleRegister() {
-  const u = $('reg-user').value.trim();
-  const p = $('reg-pass').value;
-  
-  if (!u || !p) { alert('Username dan Password wajib diisi!'); return; }
-  if (XION_ACCOUNTS[u] || getCustomAccounts()[u]) { alert('Username sudah dipakai, cari yang lain.'); return; }
-  
-  const customAccounts = getCustomAccounts();
-  customAccounts[u] = { password: p, role: 'MEMBER' };
-  
-  try {
-    localStorage.setItem('xion_custom_accounts', JSON.stringify(customAccounts));
-    alert('Registrasi Berhasil! Silakan login dengan akun baru Anda.');
-    closeModal('modal-register');
-    $('login-user').value = u;
-    $('login-pass').value = '';
-    $('reg-user').value = '';
-    $('reg-pass').value = '';
-  } catch(e) {
-    alert('Gagal menyimpan akun (Penyimpanan penuh).');
-  }
-}
-
 // ============================================================
 
 // ==================== STORIES LOGIC (WA STYLE) ====================
@@ -1407,17 +1472,6 @@ function getRoleInfo(role){return XION_ROLES[role]||XION_ROLES.MEMBER}
 function createRoleBadge(role){const info=getRoleInfo(role),badge=document.createElement('span');badge.className='role-badge '+info.className;badge.textContent=info.label;if(info.verified){const c=document.createElement('span');c.className='verified-check';c.innerHTML='<i class="fa-solid fa-check"></i>';badge.appendChild(c)}return badge}
 function updateXionProfile(){const i=getRoleInfo(currentRole);$('profile-display-name').textContent=currentUser.toUpperCase();$('cred-user').textContent=currentUser;$('profile-role-text').textContent='XION CORE '+i.label;$('profile-membership').textContent=i.label;$('profile-verification-text').textContent=i.verified?'VERIFIED ACCOUNT':'NOT VERIFIED';$('profile-role-badge').replaceChildren(createRoleBadge(currentRole));$('profile-verified').innerHTML='';if(i.verified){const c=document.createElement('span');c.className='verified-check';c.style.cssText='width:21px;height:21px';c.innerHTML='<i class="fa-solid fa-check"></i>';$('profile-verified').appendChild(c)}}
 
-function handleLogin(){
-  const u=$('login-user').value.trim(),p=$('login-pass').value;
-  const allAccounts = {...XION_ACCOUNTS, ...getCustomAccounts()};
-  const a = allAccounts[u];
-  
-  if(!a||a.password!==p){$('bot-msg').textContent='Akses ditolak. Username atau password salah.';$('login-pass').value='';return}
-  currentUser=u;currentRole=a.role;updateXionProfile();
-  $('bot-msg').textContent='Yahho~ Akses diterima! Selamat datang, Sensei!';
-  $('btn-login').textContent='ACCESS GRANTED';
-  setTimeout(()=>{showScreen('screen-splash');startSplash();$('btn-login').innerHTML='SIGN IN <i class="fa-solid fa-arrow-right"></i>'},450);
-}
 $('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin()});
 $('login-user').addEventListener('keydown',e=>{if(e.key==='Enter')$('login-pass').focus()});
 
@@ -1467,8 +1521,11 @@ function logoutApp(){
   clearInterval(splashTimer);clearInterval(splashPhaseTimer);
   document.querySelectorAll('.subpage,.modal-overlay').forEach(e=>e.classList.remove('active'));
   toggleDrawer(false);document.querySelectorAll('video').forEach(v=>v.pause());
-  showScreen('screen-login');$('login-pass').value='';$('bot-msg').textContent='Kamu sudah keluar. Masukkan akses untuk login kembali.';
+  $('login-pass').value='';$('bot-msg').textContent='Kamu sudah keluar. Masukkan akses untuk login kembali.';
   if(chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+  
+  // Logout dari Firebase
+  window.signOut(window.auth).catch(err => console.error(err));
 }
 
 async function loadNews(){const c=$('news-container');c.innerHTML='<div class="news-card"><h4>Memuat berita terbaru...</h4><p>Terhubung ke layanan berita</p></div>';try{const r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(CONFIG.newsUrl));if(!r.ok)throw Error();const j=await r.json();if(j.status!=='ok'||!j.items||!j.items.length)throw Error();c.innerHTML='';j.items.slice(0,10).forEach(it=>{const card=document.createElement('div');card.className='news-card';const l=document.createElement('span');l.className='pill-badge';l.textContent='LATEST NEWS';const h=document.createElement('h4');h.textContent=it.title||'Berita terbaru';const p=document.createElement('p');p.textContent=it.pubDate?new Date(it.pubDate).toLocaleDateString('id-ID'):'Berita online';const a=document.createElement('a');a.textContent='BACA SELENGKAPNYA ↗';a.href=it.link||'#';a.target='_blank';a.rel='noopener noreferrer';card.append(l,h,p,a);c.appendChild(card)})}catch(e){c.innerHTML='<div class="news-card"><h4>Berita belum dapat dimuat</h4><p>Periksa internet atau coba refresh.</p><button class="btn-secondary" onclick="loadNews()">COBA LAGI</button></div>'}}
@@ -2302,4 +2359,4 @@ function renderLeaderboardData(dataArray, container, periode) {
 renderSenders();updateXionProfile();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-                                                                                              </html>
+                                                                                                                                                 </html>
