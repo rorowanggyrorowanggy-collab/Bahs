@@ -13,7 +13,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp, where, Timestamp, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAC61tBtehNF3NKvv4Rq4bcNnD5hp56_jo",
@@ -48,6 +48,8 @@
   window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
   window.onAuthStateChanged = onAuthStateChanged;
   window.signOut = signOut;
+  window.GoogleAuthProvider = GoogleAuthProvider;
+  window.signInWithCredential = signInWithCredential;
 </script>
 <!-- FIREBASE SDK END -->
 
@@ -1165,7 +1167,7 @@ async function handleLogin() {
     
     // Timeout protection biar ga stuck
     const loginPromise = window.signInWithEmailAndPassword(window.auth, u + '@xion.app', p);
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Waktu habis. Cek koneksi internet.')), 10000));
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Waktu habis. Cek koneksi internet atau pastikan Email/Password login aktif di Firebase Console.')), 10000));
     
     await Promise.race([loginPromise, timeoutPromise]);
     
@@ -1220,30 +1222,7 @@ async function handleRegister(event) {
   }
 }
 
-// ==================== AUTO SEED DEFAULT ACCOUNTS ====================
-// Fungsi ini berjalan diam-diam saat web dibuka untuk memastikan akun demo langsung bisa dipake
-async function seedDefaultAccounts() {
-  const defaults = [
-    { email: 'xion_dev@xion.app', pass: '123456' },
-    { email: 'xion_developer@xion.app', pass: 'dev123' },
-    { email: 'xion_admin@xion.app', pass: 'admin123' },
-    { email: 'xion_mod@xion.app', pass: 'mod123' },
-    { email: 'xion_premium@xion.app', pass: 'premium123' },
-    { email: 'xion_member@xion.app', pass: 'member123' }
-  ];
-  
-  for (const acc of defaults) {
-    try {
-      await window.createUserWithEmailAndPassword(window.auth, acc.email, acc.pass);
-    } catch (e) {
-      // Abaikan error kalau akun udah ada
-    }
-  }
-}
-window.addEventListener('load', seedDefaultAccounts);
-// ============================================================
-
-// ==================== GOOGLE LOGIN LOGIC (NON-FIREBASE) ====================
+// ==================== GOOGLE LOGIN LOGIC (FIREBASE INTEGRATED) ====================
 function parseJwt(token) {
   var base64Url = token.split('.')[1];
   var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -1253,22 +1232,25 @@ function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-function handleGoogleLogin(response) {
+async function handleGoogleLogin(response) {
   const payload = parseJwt(response.credential);
   const gName = payload.given_name || payload.name || payload.email.split('@')[0];
   
-  currentUser = gName;
-  currentRole = 'MEMBER';
-  updateXionProfile();
-  
-  $('bot-msg').textContent = 'Yahho~ Akses Google diterima! Selamat datang, Sensei!';
-  $('btn-login').textContent = 'ACCESS GRANTED';
-  
-  setTimeout(() => {
+  try {
+    $('bot-msg').textContent = 'Memverifikasi Google...';
+    const credential = window.GoogleAuthProvider.credential(response.credential);
+    await window.signInWithCredential(window.auth, credential);
+    // onAuthStateChanged yang akan handle render profil dan splash screen
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    // Fallback local login jika Firebase error (misal domain belum di-whitelist)
+    currentUser = gName;
+    currentRole = 'MEMBER';
+    updateXionProfile();
+    $('bot-msg').textContent = 'Yahho~ Akses Google diterima (Mode Lokal).';
     showScreen('screen-splash');
     startSplash();
-    $('btn-login').innerHTML = 'SIGN IN <i class="fa-solid fa-arrow-right"></i>';
-  }, 450);
+  }
 }
 
 window.onload = function () {
@@ -2381,4 +2363,4 @@ function renderLeaderboardData(dataArray, container, periode) {
 renderSenders();updateXionProfile();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-      </html>
+  </html>
