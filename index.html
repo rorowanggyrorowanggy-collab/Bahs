@@ -485,6 +485,19 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 <div class="app-body">
   <div id="tab-home" class="view-section active">
     
+    <!-- PERINGKAT DONASI (PINDAH KE ATAS) -->
+    <div class="sec-head" style="margin-top: 0;"><h3><i class="fa-solid fa-trophy" style="color:var(--hoshino-yellow)"></i> TOP DONATUR</h3><span>FIREBASE</span></div>
+    <div class="grid-2" style="grid-template-columns: 1fr; margin-bottom: 15px;">
+      <div class="action-card" style="padding:12px;">
+        <h4 class="font-cyber" style="font-size:11px; color:var(--hoshino-yellow); margin-bottom:8px;"><i class="fa-solid fa-calendar-week"></i> MINGGU INI</h4>
+        <div id="leaderboard-weekly"><p style="text-align:center;color:#888;font-size:11px;">Memuat data...</p></div>
+      </div>
+      <div class="action-card" style="padding:12px; margin-top:10px;">
+        <h4 class="font-cyber" style="font-size:11px; color:var(--hoshino-yellow); margin-bottom:8px;"><i class="fa-solid fa-calendar-alt"></i> BULAN INI</h4>
+        <div id="leaderboard-monthly"><p style="text-align:center;color:#888;font-size:11px;">Memuat data...</p></div>
+      </div>
+    </div>
+
     <!-- STORIES BAR -->
     <div class="story-bar" id="story-bar">
       <!-- Diisi via JS -->
@@ -521,19 +534,6 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
       <button id="btn-donasi" class="btn-primary" onclick="kirimDonasi()" style="background:linear-gradient(90deg, var(--hoshino-pink), var(--hoshino-pink-deep)); color:white; font-weight:800;">
         <i class="fa-solid fa-paper-plane"></i> KIRIM DONASI
       </button>
-    </div>
-
-    <!-- PERINGKAT DONASI -->
-    <div class="sec-head"><h3><i class="fa-solid fa-trophy"></i> TOP DONATUR</h3><span>FIREBASE</span></div>
-    <div class="grid-2" style="grid-template-columns: 1fr;">
-      <div class="action-card" style="padding:12px;">
-        <h4 class="font-cyber" style="font-size:11px; color:var(--hoshino-yellow); margin-bottom:8px;"><i class="fa-solid fa-calendar-week"></i> MINGGU INI</h4>
-        <div id="leaderboard-weekly"><p style="text-align:center;color:#888;font-size:11px;">Memuat data...</p></div>
-      </div>
-      <div class="action-card" style="padding:12px; margin-top:10px;">
-        <h4 class="font-cyber" style="font-size:11px; color:var(--hoshino-yellow); margin-bottom:8px;"><i class="fa-solid fa-calendar-alt"></i> BULAN INI</h4>
-        <div id="leaderboard-monthly"><p style="text-align:center;color:#888;font-size:11px;">Memuat data...</p></div>
-      </div>
     </div>
 
     <div class="sec-head"><h3><i class="fa-solid fa-headset"></i> CONNECT WITH DEVELOPER</h3></div>
@@ -1997,33 +1997,31 @@ async function loadLeaderboardDonasi() {
 
   try {
     const sekarang = new Date();
-    
-    const semingguLalu = new Date();
-    semingguLalu.setDate(sekarang.getDate() - 7);
-
+    const semingguLalu = new Date(); semingguLalu.setDate(sekarang.getDate() - 7);
     const awalBulan = new Date(sekarang.getFullYear(), sekarang.getMonth(), 1);
 
+    // QUERY MINGGUAN (Hanya filter by createdAt untuk menghindari composite index error)
     const qWeekly = window.query(
       window.collection(window.db, 'donations'),
-      window.where('createdAt', '>=', window.Timestamp.fromDate(semingguLalu)),
-      window.orderBy('createdAt', 'desc'),
-      window.orderBy('amount', 'desc'),
-      window.limit(5)
+      window.where('createdAt', '>=', window.Timestamp.fromDate(semingguLalu))
     );
+    const snapWeekly = await window.getDocs(qWeekly);
+    let weeklyData = [];
+    snapWeekly.forEach(doc => weeklyData.push(doc.data()));
+    // Sortir di JS berdasarkan amount terbesar
+    weeklyData.sort((a, b) => b.amount - a.amount);
+    renderLeaderboardData(weeklyData.slice(0, 5), weeklyContainer, 'mingguan');
 
+    // QUERY BULANAN
     const qMonthly = window.query(
       window.collection(window.db, 'donations'),
-      window.where('createdAt', '>=', window.Timestamp.fromDate(awalBulan)),
-      window.orderBy('createdAt', 'desc'),
-      window.orderBy('amount', 'desc'),
-      window.limit(5)
+      window.where('createdAt', '>=', window.Timestamp.fromDate(awalBulan))
     );
-
-    const snapWeekly = await window.getDocs(qWeekly);
     const snapMonthly = await window.getDocs(qMonthly);
-
-    renderLeaderboard(snapWeekly, weeklyContainer, 'mingguan');
-    renderLeaderboard(snapMonthly, monthlyContainer, 'bulanan');
+    let monthlyData = [];
+    snapMonthly.forEach(doc => monthlyData.push(doc.data()));
+    monthlyData.sort((a, b) => b.amount - a.amount);
+    renderLeaderboardData(monthlyData.slice(0, 5), monthlyContainer, 'bulanan');
 
   } catch (e) {
     console.error("Gagal load leaderboard:", e);
@@ -2032,16 +2030,15 @@ async function loadLeaderboardDonasi() {
   }
 }
 
-function renderLeaderboard(snapshot, container, periode) {
-  if (snapshot.empty) {
+function renderLeaderboardData(dataArray, container, periode) {
+  if (dataArray.length === 0) {
     container.innerHTML = `<p style="text-align:center;color:#888;font-size:10px;">Belum ada donasi ${periode} ini.</p>`;
     return;
   }
-
+  
   let html = '';
-  let rank = 1;
-  snapshot.forEach((doc) => {
-    const data = doc.data();
+  dataArray.forEach((data, index) => {
+    const rank = index + 1;
     const nominal = data.amount ? data.amount.toLocaleString('id-ID') : '0';
     const badgeColor = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : 'var(--muted)';
     
@@ -2057,7 +2054,6 @@ function renderLeaderboard(snapshot, container, periode) {
         <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--hoshino-pink);">Rp ${nominal}</span>
       </div>
     `;
-    rank++;
   });
   container.innerHTML = html;
 }
@@ -2065,4 +2061,4 @@ function renderLeaderboard(snapshot, container, periode) {
 renderSenders();updateXionProfile();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-  </html>
+                                                                 </html>
