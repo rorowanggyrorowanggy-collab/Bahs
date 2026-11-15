@@ -104,6 +104,13 @@ button{cursor:pointer;color:inherit}
 
 #google-btn-container{display:flex;justify-content:center;width:100%}
 
+/* Login Footer */
+.login-footer{text-align:center;margin-top:20px;font-size:10px;color:var(--muted)}
+.login-footer a{color:var(--hoshino-blue);text-decoration:none;cursor:pointer}
+.login-footer a:hover{text-decoration:underline}
+.login-footer .credit{margin-top:5px;font-weight:600;color:#888}
+.login-footer .credit strong{color:var(--hoshino-pink)}
+
 /* === SPLASH HOSHINO === */
 #screen-splash{justify-content:center;align-items:center;text-align:center;background:radial-gradient(circle at 50% 40%,#2a1535 0%,#0d0819 70%);position:relative;overflow:hidden}
 .splash-particles{position:absolute;inset:0;pointer-events:none;z-index:1}
@@ -338,6 +345,20 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 .music-item p{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .music-item button{border:0;background:linear-gradient(90deg,var(--hoshino-pink),var(--hoshino-blue));color:#0d0819;padding:8px 12px;border-radius:8px;font-size:10px;font-weight:800;flex-shrink:0}
 
+/* ===== KALKULATOR ===== */
+.calc-display{background:#050308;border:1px solid var(--border);border-radius:12px;padding:15px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--hoshino-pink);margin-bottom:15px;min-height:65px;overflow-x:auto}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.calc-btn{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:15px 0;font-size:16px;font-weight:600;color:#fff;transition:.1s}
+.calc-btn:active{background:rgba(255,182,217,.2)}
+.calc-btn.op{color:var(--hoshino-blue)}
+.calc-btn.equal{background:var(--hoshino-pink);color:#0d0819;border:0}
+.calc-btn.clear{color:#f87171}
+
+/* ===== FANCY TEXT ===== */
+.fancy-result{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fancy-result span{font-size:14px;word-break:break-all;color:#fff;flex:1}
+.fancy-result button{background:transparent;border:0;color:var(--hoshino-pink);font-size:14px}
+
 /* ===== STORIES (WA STYLE) ===== */
 .story-bar{display:flex;gap:12px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;margin-bottom:16px}
 .story-item{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0}
@@ -393,10 +414,15 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     
     <div class="divider">OR</div>
     <div id="google-btn-container"></div>
+    
+    <div class="divider">BELUM PUNYA AKUN?</div>
+    <button class="btn-secondary" style="width:100%;" onclick="openModal('modal-register')">DAFTAR SEKARANG</button>
 
-    <p style="text-align:center;color:#888;font-size:9px;margin-top:15px">PRIVATE INTERFACE • DEMO LOGIN</p>
+    <div class="login-footer">
+      <a onclick="openModal('modal-tos')">Syarat & Ketentuan</a>
+      <p class="credit">XION Project dibuat oleh <strong>XION_DEV</strong></p>
+    </div>
   </div>
-  <p style="text-align:center;color:#777;font-size:9px;letter-spacing:2px">XION PROJECT × HOSHINO • V4.0</p>
 </section>
 
 <section id="screen-splash" class="screen">
@@ -573,7 +599,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
   </div>
 
   <div id="tab-tools" class="view-section">
-    <div class="hero-banner"><span class="hero-tag font-mono">XION / COMMAND DECK</span><h2 class="font-cyber">XION TOOLS</h2><p>Utility workspace. Pilih tools untuk menjalankan fungsi lokal.</p><span class="pill-badge">16 MODULES</span></div>
+    <div class="hero-banner"><span class="hero-tag font-mono">XION / COMMAND DECK</span><h2 class="font-cyber">XION TOOLS</h2><p>Utility workspace. Pilih tools untuk menjalankan fungsi lokal.</p><span class="pill-badge">18 MODULES</span></div>
     <div class="tools-grid">
       <div class="tool-item" onclick="runTool('Manage Server','Belum ada backend yang dikonfigurasi.')"><div class="tool-num">01 / NODE</div><div class="tool-icon"><i class="fa-solid fa-server"></i></div><h5>Manage Server</h5><span>Server Control</span></div>
       <div class="tool-item" onclick="runTool('Traffic Monitor','Status koneksi browser: '+(navigator.onLine?'ONLINE':'OFFLINE'))"><div class="tool-num">02 / NODE</div><div class="tool-icon"><i class="fa-solid fa-wave-square"></i></div><h5>Net Monitor</h5><span>Traffic Check</span></div>
@@ -591,6 +617,8 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
       <div class="tool-item" onclick="openSubpage('sub-qr')"><div class="tool-num">14 / NODE</div><div class="tool-icon" style="color:#a78bfa"><i class="fa-solid fa-qrcode"></i></div><h5>QR Generator</h5><span>Buat QR</span></div>
       <div class="tool-item" onclick="openSubpage('sub-cuaca')"><div class="tool-num">15 / NODE</div><div class="tool-icon" style="color:#60a5fa"><i class="fa-solid fa-cloud-sun"></i></div><h5>Cuaca</h5><span>Cek Cuaca</span></div>
       <div class="tool-item" onclick="openSubpage('sub-music')"><div class="tool-num">16 / NODE</div><div class="tool-icon" style="color:#1DB954"><i class="fa-brands fa-spotify"></i></div><h5>Putar Musik</h5><span>Spotify API</span></div>
+      <div class="tool-item" onclick="openSubpage('sub-kalkulator')"><div class="tool-num">17 / NODE</div><div class="tool-icon" style="color:#34d399"><i class="fa-solid fa-calculator"></i></div><h5>Kalkulator</h5><span>Hitung Cepat</span></div>
+      <div class="tool-item" onclick="openSubpage('sub-fancytext')"><div class="tool-num">18 / NODE</div><div class="tool-icon" style="color:#f472b6"><i class="fa-solid fa-font"></i></div><h5>Fancy Text</h5><span>Text Keren</span></div>
     </div>
   </div>
 
@@ -657,6 +685,95 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <button class="btn-secondary" onclick="closeModal('modal-add-story')">BATAL</button>
       <button class="btn-primary" style="margin:0" onclick="postStory()">POSTING</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REGISTRASI -->
+<div id="modal-register" class="modal-overlay">
+  <div class="modal-card">
+    <h3 class="font-cyber" style="margin-bottom:15px">DAFTAR AKUN BARU</h3>
+    <div class="input-group"><label>USERNAME</label><div class="input-box"><i class="fa-regular fa-user"></i><input id="reg-user" placeholder="Username baru"></div></div>
+    <div class="input-group"><label>PASSWORD</label><div class="input-box"><i class="fa-solid fa-lock"></i><input id="reg-pass" type="password" placeholder="Password"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px">
+      <button class="btn-secondary" onclick="closeModal('modal-register')">BATAL</button>
+      <button class="btn-primary" style="margin:0" onclick="handleRegister()">DAFTAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SYARAT & KETENTUAN -->
+<div id="modal-tos" class="modal-overlay">
+  <div class="modal-card">
+    <h3 class="font-cyber" style="margin-bottom:15px">SYARAT & KETENTUAN</h3>
+    <div style="font-size:11px; color:#bbb; line-height:1.6; max-height:50vh; overflow-y:auto; margin-bottom:15px;">
+      <p><strong>1. Pendahuluan</strong><br>Selamat datang di XION Project. Dengan mengakses atau menggunakan layanan ini, Anda setuju untuk terikat dengan syarat dan ketentuan yang berlaku.</p><br>
+      <p><strong>2. Penggunaan Layanan</strong><br>XION Project disediakan untuk keperluan pribadi, edukasi, dan hiburan. Anda dilarang menggunakan layanan ini untuk kegiatan ilegal, spam, atau merugikan pihak lain.</p><br>
+      <p><strong>3. Privasi Data</strong><br>Kami menghormati privasi Anda. Data akun, chat, dan aktivitas disimpan secara lokal di perangkat Anda (LocalStorage) atau melalui Firebase (untuk fitur donasi dan chat global). Kami tidak menjual data Anda ke pihak ketiga.</p><br>
+      <p><strong>4. Donasi</strong><br>Donasi yang diberikan bersifat sukarela dan digunakan untuk pengembangan server serta pemeliharaan XION Project. Kami tidak bertanggung jawab atas penyalahgunaan dana di luar platform ini.</p><br>
+      <p><strong>5. Perubahan Ketentuan</strong><br>Kami berhak mengubah syarat dan ketentuan ini sewaktu-waktu tanpa pemberitahuan terlebih dahulu. Penggunaan layanan secara berkelanjutan berarti Anda menyetujui perubahan tersebut.</p><br>
+      <p><strong>6. Penafian</strong><br>XION Project adalah proyek fan-made dan tidak berafiliasi dengan pihak resmi manapun (Blue Archive, One Piece, dll). Layanan disediakan "sebagaimana adanya" tanpa jaminan apapun.</p>
+    </div>
+    <button class="btn-primary" style="margin:0" onclick="closeModal('modal-tos')">SAYA MENGERTI</button>
+  </div>
+</div>
+
+<!-- SUBPAGE: KALKULATOR -->
+<div id="sub-kalkulator" class="subpage">
+  <header class="app-header">
+    <div class="header-left">
+      <button class="icon-btn" onclick="closeSubpage('sub-kalkulator')"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="header-title"><h3 class="font-cyber">KALKULATOR</h3><span>HITUNG CEPAT</span></div>
+    </div>
+  </header>
+  <div class="app-body">
+    <div class="calc-display" id="calc-screen">0</div>
+    <div class="calc-grid">
+      <button class="calc-btn clear" onclick="calcClear()">C</button>
+      <button class="calc-btn op" onclick="calcAppend('/')">/</button>
+      <button class="calc-btn op" onclick="calcAppend('*')">×</button>
+      <button class="calc-btn op" onclick="calcAppend('-')">-</button>
+      
+      <button class="calc-btn" onclick="calcAppend('7')">7</button>
+      <button class="calc-btn" onclick="calcAppend('8')">8</button>
+      <button class="calc-btn" onclick="calcAppend('9')">9</button>
+      <button class="calc-btn op" onclick="calcAppend('+')">+</button>
+      
+      <button class="calc-btn" onclick="calcAppend('4')">4</button>
+      <button class="calc-btn" onclick="calcAppend('5')">5</button>
+      <button class="calc-btn" onclick="calcAppend('6')">6</button>
+      
+      <button class="calc-btn" onclick="calcAppend('1')">1</button>
+      <button class="calc-btn" onclick="calcAppend('2')">2</button>
+      <button class="calc-btn" onclick="calcAppend('3')">3</button>
+      
+      <button class="calc-btn" style="grid-column: span 2;" onclick="calcAppend('0')">0</button>
+      <button class="calc-btn" onclick="calcAppend('.')">.</button>
+    </div>
+    <button class="btn-primary equal" style="grid-column: span 4; margin-top:10px;" onclick="calcEvaluate()">=</button>
+  </div>
+</div>
+
+<!-- SUBPAGE: FANCY TEXT -->
+<div id="sub-fancytext" class="subpage">
+  <header class="app-header">
+    <div class="header-left">
+      <button class="icon-btn" onclick="closeSubpage('sub-fancytext')"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="header-title"><h3 class="font-cyber">FANCY TEXT</h3><span>GENERATOR TEXT KEREN</span></div>
+    </div>
+  </header>
+  <div class="app-body">
+    <div class="hero-banner">
+      <span class="hero-tag font-mono">XION / TEXT STYLER</span>
+      <h2 class="font-cyber">TEXT KEREN</h2>
+      <p>Masukkan teks, pilih gaya, lalu copy hasilnya.</p>
+    </div>
+    <div class="input-box" style="margin-bottom:14px">
+      <i class="fa-solid fa-font"></i>
+      <input id="fancy-input" placeholder="Tulis teks biasa di sini..." oninput="generateFancy()">
+    </div>
+    <div id="fancy-results">
+      <!-- Hasil generate di sini -->
     </div>
   </div>
 </div>
@@ -854,7 +971,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     </div>
 
     <div class="about-block">
-      <div class="about-header"><i class="fa-solid fa-cubes" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">MODUL UTAMA (16 MODUL)</h3></div>
+      <div class="about-header"><i class="fa-solid fa-cubes" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">MODUL UTAMA (18 MODUL)</h3></div>
       <div class="about-features">
         <div class="about-feat"><i class="fa-solid fa-tower-broadcast"></i><div><strong>Manage Sender</strong><span>Kelola nomor sender lokal</span></div></div>
         <div class="about-feat"><i class="fa-solid fa-book-quran"></i><div><strong>Al-Qur'an</strong><span>114 surah lengkap Arab-Latin-Arti</span></div></div>
@@ -872,6 +989,8 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
         <div class="about-feat"><i class="fa-solid fa-qrcode"></i><div><strong>QR Generator</strong><span>Buat QR Code</span></div></div>
         <div class="about-feat"><i class="fa-solid fa-cloud-sun"></i><div><strong>Cuaca</strong><span>Cek cuaca real-time</span></div></div>
         <div class="about-feat"><i class="fa-brands fa-spotify"></i><div><strong>Putar Musik</strong><span>Spotify API Integration</span></div></div>
+        <div class="about-feat"><i class="fa-solid fa-calculator"></i><div><strong>Kalkulator</strong><span>Hitung cepat</span></div></div>
+        <div class="about-feat"><i class="fa-solid fa-font"></i><div><strong>Fancy Text</strong><span>Generator text keren</span></div></div>
       </div>
     </div>
 
@@ -922,7 +1041,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div class="about-block">
       <div class="about-header"><i class="fa-solid fa-road" style="color:var(--hoshino-yellow)"></i><h3 class="font-cyber">ROADMAP</h3></div>
       <div class="about-timeline">
-        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player, Google Login, WA Story, Firebase Donasi & Chat</div></div>
+        <div class="about-tl-item"><span class="about-tl-dot" style="background:#22c55e"></span><div><strong>V4.0 (Current)</strong> — Hoshino Theme, splash cinematic, live clock, Luffy logo, Manga Reader, BMKG, QR, Cuaca, Spotify Player, Google Login, WA Story, Firebase Donasi & Chat, Kalkulator, Fancy Text</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--hoshino-pink)"></span><div><strong>V5.0 (Next)</strong> — Firebase real-time chat, payment gateway, PWA install</div></div>
         <div class="about-tl-item"><span class="about-tl-dot" style="background:var(--muted)"></span><div><strong>V6.0 (Future)</strong> — Multi-language, AI assistant, cloud sync</div></div>
       </div>
@@ -930,7 +1049,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 
     <div class="about-block">
       <div class="about-header"><i class="fa-solid fa-users" style="color:var(--hoshino-blue)"></i><h3 class="font-cyber">TEAM & KREDIT</h3></div>
-      <p class="about-text"><strong>Developer:</strong> Team XION Project</p>
+      <p class="about-text"><strong>Developer:</strong> Team XION Project (XION_DEV)</p>
       <p class="about-text"><strong>Character Inspiration:</strong> Hoshino Takanashi (Blue Archive / Yostar)</p>
       <p class="about-text"><strong>Logo Character:</strong> Monkey D. Luffy (One Piece / Eiichiro Oda)</p>
       <p class="about-text"><strong>Fonts:</strong> Orbitron, Plus Jakarta Sans, JetBrains Mono</p>
@@ -970,7 +1089,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
 
 <div id="modal-buy-role" class="modal-overlay"><div class="modal-card"><h3 class="font-cyber" id="buy-title" style="margin-bottom:8px">BELI ROLE</h3><p id="buy-desc" style="font-size:11px;color:#aaa;margin-bottom:12px"></p><label style="font-size:10px;color:#aaa">USERNAME KONTAK</label><input class="field" id="buyer-contact" placeholder="Username / email kontak"><label style="font-size:10px;color:#aaa">CATATAN (OPSIONAL)</label><input class="field" id="buyer-note" placeholder="Catatan pesanan"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn-secondary" onclick="closeModal('modal-buy-role')">BATAL</button><button class="btn-primary" style="margin:0" onclick="submitRoleOrder()">KIRIM PESANAN</button></div></div></div>
 
-<div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div><aside id="sidebar-drawer" class="drawer"><div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px"><strong class="font-cyber">XION CORE</strong><button class="icon-btn" onclick="toggleDrawer(false)">×</button></div><p style="font-size:9px;color:#888;margin-bottom:10px">NAVIGATION MENU</p><div class="drawer-item" onclick="drawerGo('home')"><i class="fa-solid fa-house"></i> Home</div><div class="drawer-item" onclick="drawerGo('console')"><i class="fa-solid fa-terminal"></i> Console</div><div class="drawer-item" onclick="drawerGo('anime')"><i class="fa-solid fa-film"></i> Anime</div><div class="drawer-item" onclick="drawerGo('tools')"><i class="fa-solid fa-toolbox"></i> Tools</div><div class="drawer-item" onclick="drawerGo('chat')"><i class="fa-solid fa-comments"></i> Global Chat</div><div class="drawer-item" onclick="openSubpage('sub-asma');toggleDrawer(false)"><i class="fa-solid fa-moon"></i> Asmaul Husna</div><div class="drawer-item" onclick="openSubpage('sub-manga');toggleDrawer(false)"><i class="fa-solid fa-book-open"></i> Baca Manga</div><div class="drawer-item" onclick="openSubpage('sub-music');toggleDrawer(false)"><i class="fa-brands fa-spotify"></i> Putar Musik</div><div class="drawer-item" onclick="openSubpage('sub-gempa');toggleDrawer(false)"><i class="fa-solid fa-house-chimney-crack"></i> Gempa BMKG</div><div class="drawer-item" onclick="openSubpage('sub-qr');toggleDrawer(false)"><i class="fa-solid fa-qrcode"></i> QR Generator</div><div class="drawer-item" onclick="openSubpage('sub-cuaca');toggleDrawer(false)"><i class="fa-solid fa-cloud-sun"></i> Cuaca</div><div class="drawer-item" onclick="openSubpage('sub-roles');toggleDrawer(false)"><i class="fa-solid fa-crown"></i> Buy Role</div><div class="drawer-item" onclick="openSubpage('sub-about');toggleDrawer(false)"><i class="fa-solid fa-circle-info"></i> Tentang XION</div><div class="drawer-item" onclick="drawerGo('profile')"><i class="fa-regular fa-user"></i> Info Akun</div><div class="drawer-item" onclick="logoutApp()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</div></div><span class="font-mono" style="font-size:9px;color:#888">XION PROJECT × HOSHINO</span></aside>
+<div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div><aside id="sidebar-drawer" class="drawer"><div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px"><strong class="font-cyber">XION CORE</strong><button class="icon-btn" onclick="toggleDrawer(false)">×</button></div><p style="font-size:9px;color:#888;margin-bottom:10px">NAVIGATION MENU</p><div class="drawer-item" onclick="drawerGo('home')"><i class="fa-solid fa-house"></i> Home</div><div class="drawer-item" onclick="drawerGo('console')"><i class="fa-solid fa-terminal"></i> Console</div><div class="drawer-item" onclick="drawerGo('anime')"><i class="fa-solid fa-film"></i> Anime</div><div class="drawer-item" onclick="drawerGo('tools')"><i class="fa-solid fa-toolbox"></i> Tools</div><div class="drawer-item" onclick="drawerGo('chat')"><i class="fa-solid fa-comments"></i> Global Chat</div><div class="drawer-item" onclick="openSubpage('sub-asma');toggleDrawer(false)"><i class="fa-solid fa-moon"></i> Asmaul Husna</div><div class="drawer-item" onclick="openSubpage('sub-manga');toggleDrawer(false)"><i class="fa-solid fa-book-open"></i> Baca Manga</div><div class="drawer-item" onclick="openSubpage('sub-music');toggleDrawer(false)"><i class="fa-brands fa-spotify"></i> Putar Musik</div><div class="drawer-item" onclick="openSubpage('sub-gempa');toggleDrawer(false)"><i class="fa-solid fa-house-chimney-crack"></i> Gempa BMKG</div><div class="drawer-item" onclick="openSubpage('sub-qr');toggleDrawer(false)"><i class="fa-solid fa-qrcode"></i> QR Generator</div><div class="drawer-item" onclick="openSubpage('sub-cuaca');toggleDrawer(false)"><i class="fa-solid fa-cloud-sun"></i> Cuaca</div><div class="drawer-item" onclick="openSubpage('sub-kalkulator');toggleDrawer(false)"><i class="fa-solid fa-calculator"></i> Kalkulator</div><div class="drawer-item" onclick="openSubpage('sub-fancytext');toggleDrawer(false)"><i class="fa-solid fa-font"></i> Fancy Text</div><div class="drawer-item" onclick="openSubpage('sub-roles');toggleDrawer(false)"><i class="fa-solid fa-crown"></i> Buy Role</div><div class="drawer-item" onclick="openSubpage('sub-about');toggleDrawer(false)"><i class="fa-solid fa-circle-info"></i> Tentang XION</div><div class="drawer-item" onclick="drawerGo('profile')"><i class="fa-regular fa-user"></i> Info Akun</div><div class="drawer-item" onclick="logoutApp()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</div></div><span class="font-mono" style="font-size:9px;color:#888">XION PROJECT × HOSHINO</span></aside>
 
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
@@ -1039,6 +1158,39 @@ window.onload = function () {
     );
   }
 };
+// ============================================================
+
+// ==================== REGISTRASI LOGIC ====================
+function getCustomAccounts() {
+  try {
+    const data = localStorage.getItem('xion_custom_accounts');
+    return data ? JSON.parse(data) : {};
+  } catch(e) { return {}; }
+}
+
+function handleRegister() {
+  const u = $('reg-user').value.trim();
+  const p = $('reg-pass').value;
+  
+  if (!u || !p) { alert('Username dan Password wajib diisi!'); return; }
+  if (XION_ACCOUNTS[u] || getCustomAccounts()[u]) { alert('Username sudah dipakai, cari yang lain.'); return; }
+  
+  const customAccounts = getCustomAccounts();
+  customAccounts[u] = { password: p, role: 'MEMBER' };
+  
+  try {
+    localStorage.setItem('xion_custom_accounts', JSON.stringify(customAccounts));
+    alert('Registrasi Berhasil! Silakan login dengan akun baru Anda.');
+    closeModal('modal-register');
+    $('login-user').value = u;
+    $('login-pass').value = '';
+    $('reg-user').value = '';
+    $('reg-pass').value = '';
+  } catch(e) {
+    alert('Gagal menyimpan akun (Penyimpanan penuh).');
+  }
+}
+
 // ============================================================
 
 // ==================== STORIES LOGIC (WA STYLE) ====================
@@ -1256,7 +1408,10 @@ function createRoleBadge(role){const info=getRoleInfo(role),badge=document.creat
 function updateXionProfile(){const i=getRoleInfo(currentRole);$('profile-display-name').textContent=currentUser.toUpperCase();$('cred-user').textContent=currentUser;$('profile-role-text').textContent='XION CORE '+i.label;$('profile-membership').textContent=i.label;$('profile-verification-text').textContent=i.verified?'VERIFIED ACCOUNT':'NOT VERIFIED';$('profile-role-badge').replaceChildren(createRoleBadge(currentRole));$('profile-verified').innerHTML='';if(i.verified){const c=document.createElement('span');c.className='verified-check';c.style.cssText='width:21px;height:21px';c.innerHTML='<i class="fa-solid fa-check"></i>';$('profile-verified').appendChild(c)}}
 
 function handleLogin(){
-  const u=$('login-user').value.trim(),p=$('login-pass').value,a=XION_ACCOUNTS[u];
+  const u=$('login-user').value.trim(),p=$('login-pass').value;
+  const allAccounts = {...XION_ACCOUNTS, ...getCustomAccounts()};
+  const a = allAccounts[u];
+  
   if(!a||a.password!==p){$('bot-msg').textContent='Akses ditolak. Username atau password salah.';$('login-pass').value='';return}
   currentUser=u;currentRole=a.role;updateXionProfile();
   $('bot-msg').textContent='Yahho~ Akses diterima! Selamat datang, Sensei!';
@@ -1544,6 +1699,92 @@ async function searchCuaca() {
   } catch (e) {
     c.innerHTML = `<p style="color:#ef7777;font-size:11px">Gagal memuat cuaca.<br>${e.message}</p>`;
   }
+}
+
+// 4. KALKULATOR
+let calcInput = '';
+function calcUpdateDisplay() {
+  $('calc-screen').textContent = calcInput || '0';
+}
+function calcAppend(val) {
+  calcInput += val;
+  calcUpdateDisplay();
+}
+function calcClear() {
+  calcInput = '';
+  calcUpdateDisplay();
+}
+function calcEvaluate() {
+  try {
+    // Mengganti simbol kali agar bisa dihitung JS
+    let expr = calcInput.replace(/×/g, '*');
+    // Evaluasi ekspresi matematika dengan aman menggunakan Function
+    let result = new Function('return ' + expr)();
+    
+    // Format hasil agar tidak terlalu banyak desimal jika bukan integer
+    if (!Number.isInteger(result)) {
+      result = parseFloat(result.toFixed(4));
+    }
+    
+    calcInput = result.toString();
+    calcUpdateDisplay();
+  } catch (e) {
+    $('calc-screen').textContent = 'Error';
+    calcInput = '';
+  }
+}
+
+// 5. FANCY TEXT
+const fancyStyles = {
+  bold: { caps: '𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙', small: '𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳' },
+  italic: { caps: '𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡', small: '𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻' },
+  script: { caps: '𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵', small: '𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏' },
+  double: { caps: '𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ', small: '𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫' },
+  bubbles: { caps: 'ⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓂⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏ', small: 'ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ' }
+};
+
+function generateFancy() {
+  const input = $('fancy-input').value;
+  const container = $('fancy-results');
+  container.innerHTML = '';
+  
+  if (!input) return;
+
+  const alphabetCaps = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const alphabetSmall = 'abcdefghijklmnopqrstuvwxyz';
+
+  Object.keys(fancyStyles).forEach(styleName => {
+    const style = fancyStyles[styleName];
+    let result = '';
+    
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      const capsIdx = alphabetCaps.indexOf(char);
+      const smallIdx = alphabetSmall.indexOf(char);
+      
+      if (capsIdx > -1) result += style.caps[capsIdx];
+      else if (smallIdx > -1) result += style.small[smallIdx];
+      else result += char;
+    }
+    
+    const div = document.createElement('div');
+    div.className = 'fancy-result';
+    div.innerHTML = `
+      <span>${result}</span>
+      <button onclick="copyFancyText(this, '${result.replace(/'/g, "\\'")}')"><i class="fa-regular fa-copy"></i></button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function copyFancyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const originalIcon = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-check" style="color:#22c55e"></i>';
+    setTimeout(() => { btn.innerHTML = originalIcon; }, 1500);
+  }).catch(err => {
+    alert('Gagal menyalin teks.');
+  });
 }
 
 // ==================== MANGA READER LOGIC ====================
@@ -2061,4 +2302,4 @@ function renderLeaderboardData(dataArray, container, periode) {
 renderSenders();updateXionProfile();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-                                                                 </html>
+                                                                                              </html>
