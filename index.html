@@ -705,7 +705,7 @@ nav.bottom-nav{position:fixed;bottom:10px;left:12px;right:12px;max-width:520px;m
     <div class="input-group"><label>PASSWORD</label><div class="input-box"><i class="fa-solid fa-lock"></i><input id="reg-pass" type="password" placeholder="Password (min. 6 karakter)"></div></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px">
       <button class="btn-secondary" onclick="closeModal('modal-register')">BATAL</button>
-      <button class="btn-primary" style="margin:0" onclick="handleRegister(event)">DAFTAR</button>
+      <button class="btn-primary" id="btn-register" style="margin:0" onclick="handleRegister(event)">DAFTAR</button>
     </div>
   </div>
 </div>
@@ -1162,14 +1162,18 @@ async function handleLogin() {
   try {
     $('btn-login').textContent = 'AUTHENTICATING...';
     $('btn-login').disabled = true;
-    // Firebase Auth menggunakan format email. Kita gunakan virtual email @xion.app
-    await window.signInWithEmailAndPassword(window.auth, u + '@xion.app', p);
-    // Jika sukses, onAuthStateChanged akan otomatis menangani transisi layar
+    
+    // Timeout protection biar ga stuck
+    const loginPromise = window.signInWithEmailAndPassword(window.auth, u + '@xion.app', p);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Waktu habis. Cek koneksi internet.')), 10000));
+    
+    await Promise.race([loginPromise, timeoutPromise]);
+    
   } catch (error) {
     console.error(error);
     let msg = 'Akses ditolak. ';
     if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-      msg += 'Username atau password salah, atau belum terdaftar.';
+      msg += 'Username atau password salah, atau belum terdaftar. Silakan daftar dulu.';
     } else {
       msg += error.message;
     }
@@ -1215,6 +1219,29 @@ async function handleRegister(event) {
     }
   }
 }
+
+// ==================== AUTO SEED DEFAULT ACCOUNTS ====================
+// Fungsi ini berjalan diam-diam saat web dibuka untuk memastikan akun demo langsung bisa dipake
+async function seedDefaultAccounts() {
+  const defaults = [
+    { email: 'xion_dev@xion.app', pass: '123456' },
+    { email: 'xion_developer@xion.app', pass: 'dev123' },
+    { email: 'xion_admin@xion.app', pass: 'admin123' },
+    { email: 'xion_mod@xion.app', pass: 'mod123' },
+    { email: 'xion_premium@xion.app', pass: 'premium123' },
+    { email: 'xion_member@xion.app', pass: 'member123' }
+  ];
+  
+  for (const acc of defaults) {
+    try {
+      await window.createUserWithEmailAndPassword(window.auth, acc.email, acc.pass);
+    } catch (e) {
+      // Abaikan error kalau akun udah ada
+    }
+  }
+}
+window.addEventListener('load', seedDefaultAccounts);
+// ============================================================
 
 // ==================== GOOGLE LOGIN LOGIC (NON-FIREBASE) ====================
 function parseJwt(token) {
@@ -1773,16 +1800,11 @@ function calcClear() {
 }
 function calcEvaluate() {
   try {
-    // Mengganti simbol kali agar bisa dihitung JS
     let expr = calcInput.replace(/×/g, '*');
-    // Evaluasi ekspresi matematika dengan aman menggunakan Function
     let result = new Function('return ' + expr)();
-    
-    // Format hasil agar tidak terlalu banyak desimal jika bukan integer
     if (!Number.isInteger(result)) {
       result = parseFloat(result.toFixed(4));
     }
-    
     calcInput = result.toString();
     calcUpdateDisplay();
   } catch (e) {
@@ -2359,4 +2381,4 @@ function renderLeaderboardData(dataArray, container, periode) {
 renderSenders();updateXionProfile();renderAsmaList();showAsma();updateClocks();
 </script>
 </body>
-                                                                                                                                                 </html>
+      </html>
